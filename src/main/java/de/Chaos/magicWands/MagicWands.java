@@ -29,7 +29,7 @@ public final class MagicWands extends JavaPlugin {
         this.getCommand("mw").setExecutor(new MagicWandsCommand());
         this.getCommand("giverune").setExecutor(new RuneCommand());
         this.getCommand("givespellrune").setExecutor(new SpellRuneCommand());
-
+// test Test
         Bukkit.getPluginManager().registerEvents(new CraftingUI(), this);
         Bukkit.getPluginManager().registerEvents(new SpellSwitcher(), this);
         Bukkit.getPluginManager().registerEvents(new UpgradeListener(), this);
