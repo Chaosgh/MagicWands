@@ -29,7 +29,6 @@ public final class MagicWands extends JavaPlugin {
         this.getCommand("mw").setExecutor(new MagicWandsCommand());
         this.getCommand("giverune").setExecutor(new RuneCommand());
         this.getCommand("givespellrune").setExecutor(new SpellRuneCommand());
-// test Test
         Bukkit.getPluginManager().registerEvents(new CraftingUI(), this);
         Bukkit.getPluginManager().registerEvents(new SpellSwitcher(), this);
         Bukkit.getPluginManager().registerEvents(new UpgradeListener(), this);
@@ -37,7 +36,7 @@ public final class MagicWands extends JavaPlugin {
         
         getLogger().info("MagicWands Plugin wurde aktiviert!");
     }
-
+// Hallo du komischer
     @Override
     public void onDisable() {
         getLogger().info("MagicWands Plugin wurde deaktiviert!");
