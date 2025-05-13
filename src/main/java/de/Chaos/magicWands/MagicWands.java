@@ -25,7 +25,6 @@ public final class MagicWands extends JavaPlugin {
         CraftingUI.setPlugin(this);
         UpgradeSystem.setPlugin(this);
         SpellRuneSystem.setPlugin(this);
-     //Yannick war hier 2025
         this.getCommand("wandbuilder").setExecutor(new CraftingCommand());
         this.getCommand("mw").setExecutor(new MagicWandsCommand());
         this.getCommand("giverune").setExecutor(new RuneCommand());
