@@ -1,9 +1,7 @@
 package de.Chaos.magicWands.Logic;
 
 import de.Chaos.magicWands.Enums.ElementDamage;
-import de.Chaos.magicWands.Enums.WandCore;
-import de.Chaos.magicWands.Enums.WandFocus;
-import de.Chaos.magicWands.Enums.WandGrip;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;

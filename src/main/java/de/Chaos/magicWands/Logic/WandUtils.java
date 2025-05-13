@@ -64,7 +64,7 @@ public class WandUtils {
         wand.getSpells().clear();
         wand.getSpells().addAll(spells);
         while (wand.getSpells().size() > wand.getSpellSlots()) {
-            wand.getSpells().remove(wand.getSpells().size() - 1);
+            wand.getSpells().removeLast();
         }
 
         // Mana aktualisieren

@@ -26,36 +26,25 @@ public class SpellRegistry {
     }
 
     /**
-     * Gibt den aktiven Zauberspruch eines Spielers zurück.
-     *
-     * @param player Der Spieler
-     * @return Der aktive Zauberspruch oder null, wenn keiner ausgewählt ist
-     */
-    public static Spell getActiveSpell(Player player) {
-        return activeSpells.get(player.getUniqueId());
-    }
-
-    /**
      * Führt den aktiven Zauberspruch eines Spielers aus, wenn möglich.
      *
      * @param player Der Spieler
-     * @param wand Der verwendete Zauberstab
-     * @return true, wenn der Zauber erfolgreich ausgeführt wurde
+     * @param wand   Der verwendete Zauberstab
      */
-    public static boolean castSpell(Player player, Wand wand) {
+    public static void castSpell(Player player, Wand wand) {
         UUID playerId = player.getUniqueId();
         Spell spell = activeSpells.get(playerId);
 
         if (spell == null) {
             player.sendMessage("§cDu hast keinen Zauberspruch ausgewählt!");
-            return false;
+            return;
         }
 
         // Cooldown prüfen
         if (isOnCooldown(playerId, spell)) {
             long remainingCooldown = getRemainingCooldown(playerId, spell);
             player.sendMessage("§cDu musst noch " + remainingCooldown / 1000 + " Sekunden warten!");
-            return false;
+            return;
         }
 
         // Mana prüfen
@@ -64,7 +53,7 @@ public class SpellRegistry {
 
         if (currentMana < manaCost) {
             player.sendMessage("§cNicht genug Mana! (" + currentMana + "/" + manaCost + ")");
-            return false;
+            return;
         }
 
         // Mana abziehen
@@ -77,7 +66,6 @@ public class SpellRegistry {
         // Cooldown setzen
         setCooldown(playerId, spell);
 
-        return true;
     }
 
     private static boolean isOnCooldown(UUID playerId, Spell spell) {

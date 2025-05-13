@@ -10,6 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +38,8 @@ public class SpellRuneSystem {
         
         String displayName = ChatColor.LIGHT_PURPLE + "Zauber-Rune: " + spell.getDisplayName();
         meta.setDisplayName(displayName);
-        
-        List<String> lore = new ArrayList<>();
-        lore.add(ChatColor.GRAY + "Fügt einen Zauberspruch zu einem Zauberstab hinzu");
-        lore.add(ChatColor.AQUA + "Zauber: " + spell.getDisplayName());
-        lore.add(ChatColor.AQUA + "Element: " + spell.getElement().name());
-        lore.add(ChatColor.AQUA + "Mana-Kosten: " + spell.getManaCost());
-        lore.add(ChatColor.AQUA + "Cooldown: " + spell.getCooldownSeconds() + " Sekunden");
-        lore.add(ChatColor.YELLOW + "Rechtsklick auf einen Zauberstab zum Anwenden");
+
+        List<String> lore = getStrings(spell);
         meta.setLore(lore);
         
         PersistentDataContainer data = meta.getPersistentDataContainer();
@@ -54,7 +49,18 @@ public class SpellRuneSystem {
         rune.setItemMeta(meta);
         return rune;
     }
-    
+
+    private static @NotNull List<String> getStrings(Spell spell) {
+        List<String> lore = new ArrayList<>();
+        lore.add(ChatColor.GRAY + "Fügt einen Zauberspruch zu einem Zauberstab hinzu");
+        lore.add(ChatColor.AQUA + "Zauber: " + spell.getDisplayName());
+        lore.add(ChatColor.AQUA + "Element: " + spell.getElement().name());
+        lore.add(ChatColor.AQUA + "Mana-Kosten: " + spell.getManaCost());
+        lore.add(ChatColor.AQUA + "Cooldown: " + spell.getCooldownSeconds() + " Sekunden");
+        lore.add(ChatColor.YELLOW + "Rechtsklick auf einen Zauberstab zum Anwenden");
+        return lore;
+    }
+
     /**
      * Prüft, ob ein ItemStack eine Spell-Rune ist.
      *
@@ -68,7 +74,7 @@ public class SpellRuneSystem {
         PersistentDataContainer data = meta.getPersistentDataContainer();
         
         return data.has(new NamespacedKey(plugin, "spell_rune"), PersistentDataType.BOOLEAN) &&
-               data.get(new NamespacedKey(plugin, "spell_rune"), PersistentDataType.BOOLEAN);
+                Boolean.TRUE.equals(data.get(new NamespacedKey(plugin, "spell_rune"), PersistentDataType.BOOLEAN));
     }
     
     /**

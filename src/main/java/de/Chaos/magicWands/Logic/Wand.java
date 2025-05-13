@@ -68,42 +68,6 @@ public class Wand {
         return wandItem;
     }
 
-    public static Wand fromItemStack(ItemStack item, Plugin plugin) {
-        if (item == null || item.getType() != Material.BLAZE_ROD || !item.hasItemMeta()) return null;
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return null;
-
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-
-        String coreName = data.get(new NamespacedKey(plugin, "wand_core"), PersistentDataType.STRING);
-        String gripName = data.get(new NamespacedKey(plugin, "wand_grip"), PersistentDataType.STRING);
-        String focusName = data.get(new NamespacedKey(plugin, "wand_focus"), PersistentDataType.STRING);
-        Integer mana = data.get(new NamespacedKey(plugin, "wand_mana"), PersistentDataType.INTEGER);
-        Integer maxMana = data.get(new NamespacedKey(plugin, "wand_maxmana"), PersistentDataType.INTEGER);
-        Integer spellSlots = data.get(new NamespacedKey(plugin, "wand_spellslots"), PersistentDataType.INTEGER);
-        String spellList = data.get(new NamespacedKey(plugin, "wand_spells"), PersistentDataType.STRING);
-
-        if (coreName == null || gripName == null || focusName == null || mana == null || maxMana == null) return null;
-
-        WandCore core = WandCore.valueOf(coreName);
-        WandGrip grip = WandGrip.valueOf(gripName);
-        WandFocus focus = WandFocus.valueOf(focusName);
-
-        Wand wand = new Wand(core, grip, focus);
-        wand.currentMana = mana;
-        if (spellSlots != null) wand.spellSlots = spellSlots;
-
-        if (spellList != null && !spellList.isEmpty()) {
-            for (String spellName : spellList.split(",")) {
-                try {
-                    wand.addSpell(Spell.valueOf(spellName));
-                } catch (IllegalArgumentException ignored) {}
-            }
-        }
-        return wand;
-    }
-
     public void setCurrentMana(int mana) {
         this.currentMana = Math.max(0, Math.min(maxMana, mana));
     }
@@ -144,7 +108,4 @@ public class Wand {
         currentMana = Math.max(0, currentMana - cost);
     }
 
-    public void regenerateMana(int amount) {
-        currentMana = Math.min(maxMana, currentMana + amount);
-    }
 }
