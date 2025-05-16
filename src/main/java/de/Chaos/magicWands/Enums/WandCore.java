@@ -3,20 +3,22 @@ package de.Chaos.magicWands.Enums;
 import org.bukkit.Material;
 
 public enum WandCore {
-    OAK(100,10000, Material.PAPER),
-    BIRCH(120,10000, Material.PAPER),
-    BLAZE_ROD(200, 10000, Material.PAPER),
-    ENDER_ROD(250, 10000, Material.PAPER),
-    NETHER_STAR(500, 10000, Material.PAPER);
+    OAK(100,10000, Material.PAPER, "Eichenkern"),
+    BIRCH(120,10000, Material.PAPER, "Birkenkern"),
+    BLAZE_ROD(200, 10000, Material.PAPER, "Blazekern"),
+    ENDER_ROD(250, 10000, Material.PAPER, "Endkern"),
+    NETHER_STAR(500, 10000, Material.PAPER, "Netherkern");
 
     private final int manaCapacity;
     private final int customModelData;
     private final Material material;
+    private final String displayName;
 
-    WandCore(int manaCapacity, int customModelData, Material material) {
+    WandCore(int manaCapacity, int customModelData, Material material, String displayName) {
         this.manaCapacity = manaCapacity;
         this.customModelData = customModelData;
         this.material = material;
+        this.displayName = displayName;
     }
 
     public int getManaCapacity() {
