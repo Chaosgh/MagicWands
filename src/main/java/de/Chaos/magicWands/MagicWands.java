@@ -38,14 +38,9 @@ public final class MagicWands extends JavaPlugin {
         
         getLogger().info("MagicWands Plugin wurde aktiviert!");
     }
-// Hallo du komischer
     @Override
     public void onDisable() {
         getLogger().info("MagicWands Plugin wurde deaktiviert!");
-    }
-    
-    public static MagicWands getInstance() {
-        return instance;
     }
 
 }

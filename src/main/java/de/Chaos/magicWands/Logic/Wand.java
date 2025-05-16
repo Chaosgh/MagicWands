@@ -21,7 +21,7 @@ public class Wand {
     private final WandCore wandCore;
     private final WandFocus wandFocus;
     private final WandGrip wandGrip;
-    private int spellSlots;
+    private final int spellSlots;
     private final List<Spell> spells;
     private int currentMana;
     private final int maxMana;

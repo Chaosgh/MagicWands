@@ -1,5 +1,6 @@
 package de.Chaos.magicWands.Commands;
 
+import de.Chaos.magicWands.Enums.Spell;
 import de.Chaos.magicWands.Enums.WandCore;
 import de.Chaos.magicWands.Enums.WandFocus;
 import de.Chaos.magicWands.Enums.WandGrip;
@@ -12,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 public class MagicWandsCommand implements CommandExecutor, TabCompleter {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("§cDieser Befehl kann nur von Spielern verwendet werden.");
             return true;
@@ -72,7 +74,7 @@ public class MagicWandsCommand implements CommandExecutor, TabCompleter {
         player.sendMessage("§7Element: §b" + wand.getWandFocus().getElementDamage().name());
         player.sendMessage("§7Spell-Slots: §b" + wand.getSpellSlots());
         player.sendMessage("§7Zaubersprüche: §b" + (wand.getSpells().isEmpty() ? "Keine" : 
-                wand.getSpells().stream().map(spell -> spell.getDisplayName()).collect(Collectors.joining(", "))));
+                wand.getSpells().stream().map(Spell::getDisplayName).collect(Collectors.joining(", "))));
     }
 
     private void createWand(Player player, String coreStr, String gripStr, String focusStr) {
@@ -91,7 +93,7 @@ public class MagicWandsCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
             return filterStartingWith(Arrays.asList("wandinfo", "givewand"), args[0]);
         } else if (args.length >= 2 && args[0].equalsIgnoreCase("givewand")) {

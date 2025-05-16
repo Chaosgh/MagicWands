@@ -64,45 +64,39 @@ public class UpgradeSystem {
     /**
      * Wendet eine Upgrade-Rune auf einen Zauberstab an.
      *
-     * @param player Der Spieler, der das Upgrade durchführt
+     * @param player   Der Spieler, der das Upgrade durchführt
      * @param wandItem Der Zauberstab-ItemStack
      * @param runeItem Die Upgrade-Rune
-     * @return true, wenn das Upgrade erfolgreich war
      */
-    public static boolean applyUpgrade(Player player, ItemStack wandItem, ItemStack runeItem) {
+    public static void applyUpgrade(Player player, ItemStack wandItem, ItemStack runeItem) {
         // Prüfen, ob es sich um einen Zauberstab handelt
         Wand wand = WandUtils.getWandFromItem(wandItem);
         if (wand == null) {
             player.sendMessage(ChatColor.RED + "Dies ist kein gültiger Zauberstab!");
-            return false;
+            return;
         }
         
         // Prüfen, ob es sich um eine Rune handelt
         if (!isUpgradeRune(runeItem)) {
             player.sendMessage(ChatColor.RED + "Dies ist keine gültige Upgrade-Rune!");
-            return false;
+            return;
         }
         
         // Rune auslesen
         ItemMeta runeMeta = runeItem.getItemMeta();
         PersistentDataContainer runeData = runeMeta.getPersistentDataContainer();
         String runeTypeStr = runeData.get(new NamespacedKey(plugin, "rune_type"), PersistentDataType.STRING);
-        int runeValue = runeData.get(new NamespacedKey(plugin, "rune_value"), PersistentDataType.INTEGER);
-        
+
         if (runeTypeStr == null) {
             player.sendMessage(ChatColor.RED + "Ungültige Rune!");
-            return false;
+            return;
         }
         
         RuneType runeType = RuneType.valueOf(runeTypeStr);
         
         // Neuen Zauberstab mit verbesserten Stats erstellen
-        Wand upgradedWand = upgradeWand(wand, runeType, runeValue, runeData);
-        if (upgradedWand == null) {
-            player.sendMessage(ChatColor.RED + "Upgrade fehlgeschlagen!");
-            return false;
-        }
-        
+        Wand upgradedWand = upgradeWand(wand);
+
         // Alten Zauberstab durch neuen ersetzen
         ItemStack upgradedItem = WandUtils.saveWandToItem(upgradedWand);
         wandItem.setItemMeta(upgradedItem.getItemMeta());
@@ -115,7 +109,6 @@ public class UpgradeSystem {
         }
         
         player.sendMessage(ChatColor.GREEN + "Dein Zauberstab wurde erfolgreich verbessert!");
-        return true;
     }
     
     /**
@@ -135,12 +128,9 @@ public class UpgradeSystem {
      * Erstellt einen verbesserten Zauberstab basierend auf dem Runentyp.
      *
      * @param wand Der ursprüngliche Zauberstab
-     * @param runeType Der Typ der Rune
-     * @param runeValue Der Verbesserungswert
-     * @param runeData Die Rune-Daten für zusätzliche Informationen
      * @return Der verbesserte Zauberstab
      */
-    private static Wand upgradeWand(Wand wand, RuneType runeType, int runeValue, PersistentDataContainer runeData) {
+    private static Wand upgradeWand(Wand wand) {
         // Hier würde man normalerweise eine Kopie des Zauberstabs erstellen und verbessern
         // Da unsere Wand-Klasse aber unveränderlich ist, müssen wir einen neuen erstellen
         

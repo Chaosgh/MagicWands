@@ -3,7 +3,7 @@
 ## 📖 Beschreibung
 MagicWands ist ein Minecraft-Plugin, das ein umfassendes Zauberstab-System mit modularem Crafting und Upgrade-Möglichkeiten bietet. Spieler können ihre eigenen Zauberstäbe erstellen, mit verschiedenen Zaubersprüchen ausstatten und diese im Kampf oder für andere Zwecke einsetzen.
 
-## 🧙‍♂️ Tutorial: Wie benutze ich das Plugin?
+## Tutorial: Wie benutze ich das Plugin?
 
 ### Zauberstäbe erstellen
 1. Verwende den Befehl `/wandbuilder`, um das Crafting-GUI zu öffnen
@@ -29,7 +29,7 @@ MagicWands ist ein Minecraft-Plugin, das ein umfassendes Zauberstab-System mit m
 3. Rechtsklicke mit der Rune, um deinen Zauberstab zu verbessern
 4. Die verbesserten Werte werden in der Lore des Zauberstabs angezeigt
 
-## 🔧 Verfügbare Zaubersprüche
+## Verfügbare Zaubersprüche
 - **Feuerball**: Wirft einen Feuerball, der Schaden verursacht und Gegner in Brand setzt
 - **Eissplitter**: Verlangsamt Gegner und verursacht Wasserschaden
 - **Steinschlag**: Verursacht hohen Erdschaden
@@ -38,22 +38,18 @@ MagicWands ist ein Minecraft-Plugin, das ein umfassendes Zauberstab-System mit m
 - **Blitzschlag**: Hoher Schaden mit Chance auf Kettenblitze
 - **Leerenkugel**: Mächtiger Dunkler Zauber mit hohen Kosten
 
-## 🛠️ Admin-Befehle
+##  Admin-Befehle
 - `/mw wandinfo` - Zeigt alle Statistiken eines Zauberstabs an
 - `/mw givewand <core> <grip> <focus>` - Erstellt einen Zauberstab mit den angegebenen Komponenten
 
-## 📋 ToDo-Liste
-
-### 🔧 Grundsystem
-- [x] Erstelle `Wand`-Klasse für Stats wie `mana`, `elementdamage`, `castSpeed` etc.
-- [x] Implementiere `Wand`-Klasse, die Stats + Spellslots + Komponenten kapselt
-- [x] Speichere Wand-Daten via `NBT` im Item
+## ToDo-Liste
 
 ### Modulares Crafting-System
 #### Komponenten-Enums
 - [x] `WandCore` mit `manaCapacity`
 - [x] `WandGrip` mit `castSpeed`, evtl. CritChance
 - [x] `WandFocus` mit `elementDamage`, Typ (Feuer, Eis, ...)
+- [ ] Erstellung dieser enums zu Items
 
 #### Crafting GUI
 - [x] GUI-Command `/wandbuilder`

@@ -13,7 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -30,15 +29,15 @@ public class CraftingUI implements Listener {
 
     public static void open(Player player) {
         Inventory inv = Bukkit.createInventory(null, 9, TITLE);
-        inv.setItem(8, createButton("§a§lErstellen"));
+        inv.setItem(8, createButton());
         player.openInventory(inv);
     }
 
-    private static ItemStack createButton(String name) {
+    private static ItemStack createButton() {
         ItemStack item = new ItemStack(Material.LIME_CONCRETE);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(name);
+            meta.setDisplayName("§a§lErstellen");
             item.setItemMeta(meta);
         }
         return item;
@@ -57,7 +56,7 @@ public class CraftingUI implements Listener {
             ItemStack gripItem = inv.getItem(4);
             ItemStack focusItem = inv.getItem(5);
 
-            if (!isValid(coreItem) || !isValid(gripItem) || !isValid(focusItem)) {
+            if (isValid(coreItem) || isValid(gripItem) || isValid(focusItem)) {
                 player.sendMessage("§cBitte alle drei Komponenten einlegen.");
                 return;
             }
@@ -82,7 +81,7 @@ public class CraftingUI implements Listener {
     }
 
     private boolean isValid(ItemStack item) {
-        return item != null && item.hasItemMeta();
+        return item == null || !item.hasItemMeta();
     }
 
     private <T extends Enum<T>> T getEnumFromNBT(ItemStack item, String key, Class<T> enumClass) {

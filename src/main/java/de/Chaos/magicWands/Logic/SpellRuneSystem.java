@@ -80,23 +80,22 @@ public class SpellRuneSystem {
     /**
      * Wendet eine Spell-Rune auf einen Zauberstab an.
      *
-     * @param player Der Spieler, der die Rune anwendet
+     * @param player   Der Spieler, der die Rune anwendet
      * @param wandItem Der Zauberstab-ItemStack
      * @param runeItem Die Spell-Rune
-     * @return true, wenn das Hinzufügen erfolgreich war
      */
-    public static boolean applySpellRune(Player player, ItemStack wandItem, ItemStack runeItem) {
+    public static void applySpellRune(Player player, ItemStack wandItem, ItemStack runeItem) {
         // Prüfen, ob es sich um einen Zauberstab handelt
         Wand wand = WandUtils.getWandFromItem(wandItem);
         if (wand == null) {
             player.sendMessage(ChatColor.RED + "Dies ist kein gültiger Zauberstab!");
-            return false;
+            return;
         }
         
         // Prüfen, ob es sich um eine Spell-Rune handelt
         if (!isSpellRune(runeItem)) {
             player.sendMessage(ChatColor.RED + "Dies ist keine gültige Zauber-Rune!");
-            return false;
+            return;
         }
         
         // Spell aus der Rune auslesen
@@ -106,7 +105,7 @@ public class SpellRuneSystem {
         
         if (spellTypeStr == null) {
             player.sendMessage(ChatColor.RED + "Ungültige Zauber-Rune!");
-            return false;
+            return;
         }
         
         try {
@@ -114,13 +113,13 @@ public class SpellRuneSystem {
             
             if (wand.isFull()) {
                 player.sendMessage(ChatColor.RED + "Dieser Zauberstab hat bereits die maximale Anzahl an Zaubersprüchen!");
-                return false;
+                return;
             }
             
             // Prüfen, ob der Zauberstab den Zauberspruch bereits hat
             if (wand.getSpells().contains(spell)) {
                 player.sendMessage(ChatColor.RED + "Dieser Zauberstab hat diesen Zauberspruch bereits!");
-                return false;
+                return;
             }
             
             wand.addSpell(spell);
@@ -134,11 +133,9 @@ public class SpellRuneSystem {
             
             player.sendMessage(ChatColor.GREEN + "Du hast deinem Zauberstab den Zauberspruch " + 
                     ChatColor.GOLD + spell.getDisplayName() + ChatColor.GREEN + " hinzugefügt!");
-            
-            return true;
+
         } catch (IllegalArgumentException e) {
             player.sendMessage(ChatColor.RED + "Ungültiger Zauberspruch in der Rune!");
-            return false;
         }
     }
 }
