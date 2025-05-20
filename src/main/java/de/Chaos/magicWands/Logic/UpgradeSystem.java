@@ -1,7 +1,6 @@
 package de.Chaos.magicWands.Logic;
 
 import de.Chaos.magicWands.Enums.ElementDamage;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -20,53 +19,57 @@ import java.util.List;
  */
 public class UpgradeSystem {
     private static Plugin plugin;
-    
+
     public static void setPlugin(Plugin pl) {
         plugin = pl;
     }
-    
+
+    // Zentrale Keys für PersistentData
+    private static NamespacedKey KEY_TYPE() {
+        return new NamespacedKey(plugin, "rune_type");
+    }
+
+    private static NamespacedKey KEY_VALUE() {
+        return new NamespacedKey(plugin, "rune_value");
+    }
+
+    private static NamespacedKey KEY_ELEMENT() {
+        return new NamespacedKey(plugin, "rune_element");
+    }
+
     /**
      * Erstellt eine Upgrade-Rune für einen bestimmten Stat.
-     *
-     * @param type Der Typ der Rune (mana, element, speed, etc.)
-     * @param value Der Upgrade-Wert
-     * @param element Das Element (nur für Element-Runen)
-     * @return Die erstellte Rune als ItemStack
      */
     public static ItemStack createUpgradeRune(RuneType type, int value, ElementDamage element) {
         ItemStack rune = new ItemStack(Material.AMETHYST_SHARD);
         ItemMeta meta = rune.getItemMeta();
         if (meta == null) return rune;
-        
+
         String displayName = ChatColor.LIGHT_PURPLE + "Upgrade-Rune: " + type.getDisplayName();
         if (type == RuneType.ELEMENT && element != null) {
             displayName += " " + element.name();
         }
         meta.setDisplayName(displayName);
-        
+
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.GRAY + "Verbessert einen Zauberstab");
         lore.add(ChatColor.AQUA + "Bonus: +" + value + " " + type.getDisplayName());
         lore.add(ChatColor.YELLOW + "Rechtsklick auf einen Zauberstab zum Anwenden");
         meta.setLore(lore);
-        
+
         PersistentDataContainer data = meta.getPersistentDataContainer();
-        data.set(new NamespacedKey(plugin, "rune_type"), PersistentDataType.STRING, type.name());
-        data.set(new NamespacedKey(plugin, "rune_value"), PersistentDataType.INTEGER, value);
+        data.set(KEY_TYPE(), PersistentDataType.STRING, type.name());
+        data.set(KEY_VALUE(), PersistentDataType.INTEGER, value);
         if (type == RuneType.ELEMENT && element != null) {
-            data.set(new NamespacedKey(plugin, "rune_element"), PersistentDataType.STRING, element.name());
+            data.set(KEY_ELEMENT(), PersistentDataType.STRING, element.name());
         }
-        
+
         rune.setItemMeta(meta);
         return rune;
     }
-    
+
     /**
      * Wendet eine Upgrade-Rune auf einen Zauberstab an.
-     *
-     * @param player   Der Spieler, der das Upgrade durchführt
-     * @param wandItem Der Zauberstab-ItemStack
-     * @param runeItem Die Upgrade-Rune
      */
     public static void applyUpgrade(Player player, ItemStack wandItem, ItemStack runeItem) {
         // Prüfen, ob es sich um einen Zauberstab handelt
@@ -75,70 +78,81 @@ public class UpgradeSystem {
             player.sendMessage(ChatColor.RED + "Dies ist kein gültiger Zauberstab!");
             return;
         }
-        
+
         // Prüfen, ob es sich um eine Rune handelt
         if (!isUpgradeRune(runeItem)) {
             player.sendMessage(ChatColor.RED + "Dies ist keine gültige Upgrade-Rune!");
             return;
         }
-        
-        // Rune auslesen
-        ItemMeta runeMeta = runeItem.getItemMeta();
-        PersistentDataContainer runeData = runeMeta.getPersistentDataContainer();
-        String runeTypeStr = runeData.get(new NamespacedKey(plugin, "rune_type"), PersistentDataType.STRING);
 
-        if (runeTypeStr == null) {
-            player.sendMessage(ChatColor.RED + "Ungültige Rune!");
+        ItemMeta runeMeta = runeItem.getItemMeta();
+        if (runeMeta == null) {
+            player.sendMessage(ChatColor.RED + "Ungültige Rune (keine Metadaten)!");
             return;
         }
-        
-        RuneType runeType = RuneType.valueOf(runeTypeStr);
-        
-        // Neuen Zauberstab mit verbesserten Stats erstellen
-        Wand upgradedWand = upgradeWand(wand);
 
-        // Alten Zauberstab durch neuen ersetzen
+        PersistentDataContainer data = runeMeta.getPersistentDataContainer();
+
+        String typeStr = data.get(KEY_TYPE(), PersistentDataType.STRING);
+        Integer value = data.get(KEY_VALUE(), PersistentDataType.INTEGER);
+        String elementStr = data.get(KEY_ELEMENT(), PersistentDataType.STRING);
+
+        if (typeStr == null || value == null) {
+            player.sendMessage(ChatColor.RED + "Ungültige Rune-Daten!");
+            return;
+        }
+
+        RuneType type = RuneType.valueOf(typeStr);
+        ElementDamage element = (elementStr != null) ? ElementDamage.valueOf(elementStr) : null;
+
+        // Neuen verbesserten Zauberstab erzeugen
+        Wand upgradedWand = upgradeWand(wand, type, value, element);
         ItemStack upgradedItem = WandUtils.saveWandToItem(upgradedWand);
-        wandItem.setItemMeta(upgradedItem.getItemMeta());
-        
-        // Rune verbrauchen (Menge um 1 reduzieren)
+
+        // Item im Inventar ersetzen
+        int slot = player.getInventory().first(wandItem);
+        if (slot != -1) {
+            player.getInventory().setItem(slot, upgradedItem);
+        } else {
+            player.sendMessage(ChatColor.RED + "Zauberstab konnte nicht ersetzt werden.");
+            return;
+        }
+
+        // Rune verbrauchen
         if (runeItem.getAmount() > 1) {
             runeItem.setAmount(runeItem.getAmount() - 1);
         } else {
-            player.getInventory().remove(runeItem);
+            player.getInventory().removeItem(runeItem);
         }
-        
+
         player.sendMessage(ChatColor.GREEN + "Dein Zauberstab wurde erfolgreich verbessert!");
     }
-    
+
     /**
      * Prüft, ob ein ItemStack eine Upgrade-Rune ist.
-     *
-     * @param item Das zu prüfende Item
-     * @return true, wenn es eine Rune ist
      */
     public static boolean isUpgradeRune(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return false;
-        
-        PersistentDataContainer data = item.getItemMeta().getPersistentDataContainer();
-        return data.has(new NamespacedKey(plugin, "rune_type"), PersistentDataType.STRING);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return false;
+
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        return data.has(KEY_TYPE(), PersistentDataType.STRING);
     }
-    
+
     /**
      * Erstellt einen verbesserten Zauberstab basierend auf dem Runentyp.
-     *
-     * @param wand Der ursprüngliche Zauberstab
-     * @return Der verbesserte Zauberstab
      */
-    private static Wand upgradeWand(Wand wand) {
-        // Hier würde man normalerweise eine Kopie des Zauberstabs erstellen und verbessern
-        // Da unsere Wand-Klasse aber unveränderlich ist, müssen wir einen neuen erstellen
-        
-        // Für jetzt erstellen wir einfach einen neuen Zauberstab mit den gleichen Komponenten
-        // In einer vollständigen Implementierung würde man hier die Stats verbessern
-        return new Wand(wand.getWandCore(), wand.getWandGrip(), wand.getWandFocus());
+    private static Wand upgradeWand(Wand wand, RuneType type, int value, ElementDamage element) {
+        // Beispielhafte Erweiterung der Upgrade-Logik
+        Wand upgraded = new Wand(
+                wand.getWandCore().upgrade(type, value, element),
+                wand.getWandGrip(),
+                wand.getWandFocus()
+        );
+        return upgraded;
     }
-    
+
     /**
      * Enum für die verschiedenen Typen von Upgrade-Runen.
      */
@@ -147,13 +161,13 @@ public class UpgradeSystem {
         ELEMENT("Element"),
         SPEED("Geschwindigkeit"),
         CRIT("Kritisch");
-        
+
         private final String displayName;
-        
+
         RuneType(String displayName) {
             this.displayName = displayName;
         }
-        
+
         public String getDisplayName() {
             return displayName;
         }

@@ -1,5 +1,6 @@
 package de.Chaos.magicWands.Enums;
 
+import de.Chaos.magicWands.Logic.UpgradeSystem;
 import org.bukkit.Material;
 
 public enum WandCore {
@@ -35,5 +36,20 @@ public enum WandCore {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public WandCore upgrade(UpgradeSystem.RuneType type, int value, ElementDamage element) {
+    int upgradedMana = this.getManaCapacity();
+
+    switch (type) {
+            case MANA:
+                upgradedMana += value;
+               break;
+            // Für andere Typen wie SPEED, CRIT, ELEMENT macht ein Upgrade auf den Core evtl. keinen Sinn
+            default:
+                break;
+        }
+
+        return null;
     }
 }
