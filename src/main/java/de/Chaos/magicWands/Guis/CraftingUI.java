@@ -5,6 +5,7 @@ import de.Chaos.magicWands.Enums.WandFocus;
 import de.Chaos.magicWands.Enums.WandGrip;
 import de.Chaos.magicWands.Logic.Wand;
 import de.Chaos.magicWands.Logic.WandBuilder;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -20,7 +21,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 
 public class CraftingUI implements Listener {
-    private static final String TITLE = "§9Zauberstab-Hersteller";
+    private static final Component TITLE = Component.text("§9Zauberstab-Hersteller");
     private static Plugin plugin;
 
     public static void setPlugin(Plugin pl) {
@@ -37,7 +38,7 @@ public class CraftingUI implements Listener {
         ItemStack item = new ItemStack(Material.LIME_CONCRETE);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("§a§lErstellen");
+            meta.displayName(Component.text("§a§lErstellen"));
             item.setItemMeta(meta);
         }
         return item;
@@ -45,7 +46,7 @@ public class CraftingUI implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (!e.getView().getTitle().equals(TITLE)) return;
+        if (!e.getView().getTitle().equals(TITLE.toString())) return;
 
         e.setCancelled(true);
         Player player = (Player) e.getWhoClicked();
