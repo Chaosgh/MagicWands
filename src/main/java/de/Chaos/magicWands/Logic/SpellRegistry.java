@@ -59,10 +59,9 @@ public class SpellRegistry {
         // Mana abziehen
         wand.setCurrentMana(currentMana - manaCost);
         player.sendMessage("§bMana verwendet: " + manaCost + " §7(Verbleibend: " + wand.getCurrentMana() + ")");
-
         // Zauber ausführen - HIER WAR DER FEHLER!
         player.sendMessage("§aDu wirkst " + spell.getDisplayName() + "!");
-        spell.cast(player); // Diese Zeile fehlte!
+        spell.cast(player);
 
         // Cooldown setzen
         setCooldown(playerId, spell);
