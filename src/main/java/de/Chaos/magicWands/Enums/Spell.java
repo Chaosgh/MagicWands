@@ -2,6 +2,7 @@ package de.Chaos.magicWands.Enums;
 
 import org.bukkit.*;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.bukkit.plugin.Plugin;
@@ -33,7 +34,7 @@ public enum Spell {
                     );
 
                     player.getWorld().spawnParticle(Particle.FLAME, handLoc, 3, 0.1, 0.1, 0.1, 0.01);
-                    player.getWorld().spawnParticle(Particle.SMOKE_LARGE, handLoc, 1, 0.05, 0.05, 0.05, 0.01);
+                    player.getWorld().spawnParticle(Particle.SMOKE, handLoc, 1, 0.05, 0.05, 0.05, 0.01);
 
                     if (ticks % 5 == 0) {
                         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_FIRE_AMBIENT, 0.5f, 1.5f);
@@ -73,8 +74,8 @@ public enum Spell {
 
                     // Projectile effects
                     currentLoc.getWorld().spawnParticle(Particle.FLAME, currentLoc, 8, 0.2, 0.2, 0.2, 0.05);
-                    currentLoc.getWorld().spawnParticle(Particle.SMOKE_LARGE, currentLoc, 3, 0.1, 0.1, 0.1, 0.02);
-                    currentLoc.getWorld().spawnParticle(Particle.DRIP_LAVA, currentLoc, 2, 0.1, 0.1, 0.1, 0.01);
+                    currentLoc.getWorld().spawnParticle(Particle.SMOKE, currentLoc, 3, 0.1, 0.1, 0.1, 0.02);
+                    currentLoc.getWorld().spawnParticle(Particle.LAVA, currentLoc, 2, 0.1, 0.1, 0.1, 0.01);
 
                     currentLoc.add(direction);
                     distance++;
@@ -84,9 +85,9 @@ public enum Spell {
 
         private void explodeFireball(Location loc, Player player, Plugin plugin) {
             // Massive explosion effect
-            loc.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, loc, 5, 1, 1, 1, 0.1);
+            loc.getWorld().spawnParticle(Particle.EXPLOSION, loc, 5, 1, 1, 1, 0.1);
             loc.getWorld().spawnParticle(Particle.FLAME, loc, 50, 2, 2, 2, 0.1);
-            loc.getWorld().spawnParticle(Particle.SMOKE_LARGE, loc, 30, 1.5, 1.5, 1.5, 0.05);
+            loc.getWorld().spawnParticle(Particle.SMOKE, loc, 30, 1.5, 1.5, 1.5, 0.05);
             loc.getWorld().spawnParticle(Particle.LAVA, loc, 20, 1, 1, 1, 0.02);
 
             loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.8f);
@@ -119,8 +120,8 @@ public enum Spell {
 
                     // Frost gathering effect
                     Location handLoc = player.getEyeLocation().add(0, -0.3, 0);
-                    player.getWorld().spawnParticle(Particle.SNOWBALL, handLoc, 5, 0.3, 0.3, 0.3, 0.01);
-                    player.getWorld().spawnParticle(Particle.ITEM_CRACK, handLoc, 3, 0.2, 0.2, 0.2, 0.01,
+                    player.getWorld().spawnParticle(Particle.SNOWFLAKE, handLoc, 5, 0.3, 0.3, 0.3, 0.01);
+                    player.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, handLoc, 3, 0.2, 0.2, 0.2, 0.01,
                             new ItemStack(Material.ICE));
 
                     if (ticks % 3 == 0) {
@@ -167,9 +168,9 @@ public enum Spell {
                         }
 
                         // Shard trail effects
-                        currentLoc.getWorld().spawnParticle(Particle.ITEM_CRACK, currentLoc, 3, 0.1, 0.1, 0.1, 0.01,
+                        currentLoc.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, currentLoc, 3, 0.1, 0.1, 0.1, 0.01,
                                 new ItemStack(Material.ICE));
-                        currentLoc.getWorld().spawnParticle(Particle.SNOWBALL, currentLoc, 2, 0.05, 0.05, 0.05, 0.01);
+                        currentLoc.getWorld().spawnParticle(Particle.SNOWFLAKE, currentLoc, 2, 0.05, 0.05, 0.05, 0.01);
 
                         currentLoc.add(shardDirection);
                         distance++;
@@ -179,15 +180,15 @@ public enum Spell {
         }
 
         private void iceShardImpact(Location loc, Player player) {
-            loc.getWorld().spawnParticle(Particle.ITEM_CRACK, loc, 15, 0.5, 0.5, 0.5, 0.1,
+            loc.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, loc, 15, 0.5, 0.5, 0.5, 0.1,
                     new ItemStack(Material.ICE));
-            loc.getWorld().spawnParticle(Particle.SNOWBALL, loc, 10, 0.3, 0.3, 0.3, 0.05);
+            loc.getWorld().spawnParticle(Particle.SNOWFLAKE, loc, 10, 0.3, 0.3, 0.3, 0.05);
 
             for (Entity entity : loc.getWorld().getNearbyEntities(loc, 2, 2, 2)) {
                 if (entity instanceof LivingEntity target && !entity.equals(player)) {
                     target.damage(5.0, player);
                     target.setFreezeTicks(120);
-                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 80, 2));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 80, 2));
                 }
             }
         }
@@ -214,7 +215,7 @@ public enum Spell {
                     // Storm clouds gathering
                     Location skyLoc = target.clone().add(0, 20, 0);
                     skyLoc.getWorld().spawnParticle(Particle.CLOUD, skyLoc, 10, 3, 1, 3, 0.02);
-                    skyLoc.getWorld().spawnParticle(Particle.SMOKE_NORMAL, skyLoc, 5, 2, 1, 2, 0.01);
+                    skyLoc.getWorld().spawnParticle(Particle.SMOKE, skyLoc, 5, 2, 1, 2, 0.01);
 
                     if (ticks % 10 == 0) {
                         skyLoc.getWorld().playSound(skyLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.3f, 0.5f);
@@ -327,7 +328,7 @@ public enum Spell {
                         );
 
                         spiralLoc.getWorld().spawnParticle(Particle.PORTAL, spiralLoc, 2, 0.05, 0.05, 0.05, 0.01);
-                        spiralLoc.getWorld().spawnParticle(Particle.SMOKE_NORMAL, spiralLoc, 1, 0.02, 0.02, 0.02, 0.01);
+                        spiralLoc.getWorld().spawnParticle(Particle.SMOKE, spiralLoc, 1, 0.02, 0.02, 0.02, 0.01);
                     }
 
                     if (ticks % 8 == 0) {
@@ -358,7 +359,7 @@ public enum Spell {
 
                     // Void orb visual
                     orbLoc.getWorld().spawnParticle(Particle.PORTAL, orbLoc, 15, 0.3, 0.3, 0.3, 0.1);
-                    orbLoc.getWorld().spawnParticle(Particle.SMOKE_NORMAL, orbLoc, 5, 0.2, 0.2, 0.2, 0.02);
+                    orbLoc.getWorld().spawnParticle(Particle.SMOKE, orbLoc, 5, 0.2, 0.2, 0.2, 0.02);
                     orbLoc.getWorld().spawnParticle(Particle.END_ROD, orbLoc, 3, 0.1, 0.1, 0.1, 0.01);
 
                     // Gravity well effect
@@ -388,7 +389,7 @@ public enum Spell {
             // Void explosion
             loc.getWorld().spawnParticle(Particle.PORTAL, loc, 100, 3, 3, 3, 0.2);
             loc.getWorld().spawnParticle(Particle.END_ROD, loc, 50, 2, 2, 2, 0.1);
-            loc.getWorld().spawnParticle(Particle.SMOKE_LARGE, loc, 30, 2, 2, 2, 0.05);
+            loc.getWorld().spawnParticle(Particle.SMOKE, loc, 30, 2, 2, 2, 0.05);
 
             loc.getWorld().playSound(loc, Sound.ENTITY_WITHER_SPAWN, 1.5f, 0.5f);
 
@@ -436,7 +437,7 @@ public enum Spell {
                         );
 
                         ringLoc.getWorld().spawnParticle(Particle.END_ROD, ringLoc, 1, 0.02, 0.02, 0.02, 0.01);
-                        ringLoc.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, ringLoc, 2, 0.05, 0.05, 0.05, 0.01);
+                        ringLoc.getWorld().spawnParticle(Particle.ENCHANT, ringLoc, 2, 0.05, 0.05, 0.05, 0.01);
                     }
 
                     if (ticks % 5 == 0) {
@@ -472,7 +473,7 @@ public enum Spell {
                         );
 
                         waveLoc.getWorld().spawnParticle(Particle.END_ROD, waveLoc, 3, 0.1, 0.1, 0.1, 0.05);
-                        waveLoc.getWorld().spawnParticle(Particle.ENCHANTMENT_TABLE, waveLoc, 5, 0.2, 0.2, 0.2, 0.1);
+                        waveLoc.getWorld().spawnParticle(Particle.ENCHANT, waveLoc, 5, 0.2, 0.2, 0.2, 0.1);
                     }
 
                     // Damage entities in current ring
