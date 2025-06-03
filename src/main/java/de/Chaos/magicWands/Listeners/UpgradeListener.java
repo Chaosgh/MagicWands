@@ -25,7 +25,7 @@ public class UpgradeListener implements Listener {
         Player player = event.getPlayer();
         ItemStack heldItem = player.getInventory().getItemInMainHand();
         ItemStack offhandItem = player.getInventory().getItemInOffHand();
-        
+
         // Prüfen, ob der Spieler eine Rune in der Haupthand und einen Zauberstab in der Nebenhand hält
         if (UpgradeSystem.isUpgradeRune(heldItem) && offhandItem.getType() == Material.BLAZE_ROD) {
             event.setCancelled(true);

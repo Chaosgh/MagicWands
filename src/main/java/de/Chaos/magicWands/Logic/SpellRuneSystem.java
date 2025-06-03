@@ -121,7 +121,7 @@ public class SpellRuneSystem {
                 player.sendMessage(ChatColor.RED + "Dieser Zauberstab hat diesen Zauberspruch bereits!");
                 return;
             }
-            
+
             wand.addSpell(spell);
             
             // Zauberstab aktualisieren

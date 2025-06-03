@@ -104,7 +104,6 @@ public enum Spell {
             });
         }
     };
-
     private final String displayName;
     private final int manaCost;
     private final int cooldownSeconds;

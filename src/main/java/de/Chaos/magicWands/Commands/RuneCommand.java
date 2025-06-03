@@ -47,7 +47,7 @@ public class RuneCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
             }
-            
+
             ItemStack rune = UpgradeSystem.createUpgradeRune(runeType, value, element);
             player.getInventory().addItem(rune);
             player.sendMessage("§aRune erstellt und in dein Inventar gelegt!");

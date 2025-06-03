@@ -58,7 +58,7 @@ public class SpellSwitcher implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack heldItem = player.getInventory().getItemInMainHand();
-        
+
         if (heldItem.getType() != Material.BLAZE_ROD) return;
         
         Wand wand = WandUtils.getWandFromItem(heldItem);

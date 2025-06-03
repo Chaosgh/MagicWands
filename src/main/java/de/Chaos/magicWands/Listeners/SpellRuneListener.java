@@ -15,7 +15,7 @@ public class SpellRuneListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (!event.getAction().name().contains("RIGHT_CLICK")) return;
-        
+
         if (event.getHand() != EquipmentSlot.HAND) return;
         
         Player player = event.getPlayer();
