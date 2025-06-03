@@ -60,12 +60,32 @@ public class SpellRegistry {
         wand.setCurrentMana(currentMana - manaCost);
         player.sendMessage("§bMana verwendet: " + manaCost + " §7(Verbleibend: " + wand.getCurrentMana() + ")");
 
-        // Zauber ausführen (hier müsste eigentliche Logik rein)
+        // Zauber ausführen - HIER WAR DER FEHLER!
         player.sendMessage("§aDu wirkst " + spell.getDisplayName() + "!");
+        spell.cast(player); // Diese Zeile fehlte!
 
         // Cooldown setzen
         setCooldown(playerId, spell);
+    }
 
+    /**
+     * Gibt den aktiven Zauberspruch eines Spielers zurück.
+     *
+     * @param player Der Spieler
+     * @return Der aktive Zauberspruch oder null
+     */
+    public static Spell getActiveSpell(Player player) {
+        return activeSpells.get(player.getUniqueId());
+    }
+
+    /**
+     * Entfernt den aktiven Zauberspruch eines Spielers.
+     *
+     * @param player Der Spieler
+     */
+    public static void clearActiveSpell(Player player) {
+        activeSpells.remove(player.getUniqueId());
+        player.sendMessage("§7Zauberspruch-Auswahl entfernt.");
     }
 
     private static boolean isOnCooldown(UUID playerId, Spell spell) {
