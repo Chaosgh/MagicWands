@@ -12,11 +12,3 @@ commands:
     description: Hauptbefehl für MagicWands Plugin
     usage: /mw <wandinfo|givewand> [args...]
     aliases: [magicwands]
-  giverune:
-    description: Erstellt eine Upgrade-Rune für Testzwecke
-    usage: /giverune <typ> <wert> [element]
-    permission: magicwands.admin
-  givespellrune:
-    description: Erstellt eine Zauber-Rune für Testzwecke
-    usage: /givespellrune <zauber>
-    permission: magicwands.admin

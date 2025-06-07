@@ -1,6 +1,7 @@
 package de.Chaos.magicWands.Logic;
 
 import de.Chaos.magicWands.Enums.Spell;
+import de.Chaos.magicWands.MagicWands;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -62,22 +63,6 @@ public class SpellRuneSystem {
     }
 
     /**
-     * Prüft, ob ein ItemStack eine Spell-Rune ist.
-     *
-     * @param item Das zu prüfende Item
-     * @return true, wenn es sich um eine Spell-Rune handelt
-     */
-    public static boolean isSpellRune(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return false;
-        
-        ItemMeta meta = item.getItemMeta();
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        
-        return data.has(new NamespacedKey(plugin, "spell_rune"), PersistentDataType.BOOLEAN) &&
-                Boolean.TRUE.equals(data.get(new NamespacedKey(plugin, "spell_rune"), PersistentDataType.BOOLEAN));
-    }
-    
-    /**
      * Wendet eine Spell-Rune auf einen Zauberstab an.
      *
      * @param player   Der Spieler, der die Rune anwendet
@@ -101,7 +86,7 @@ public class SpellRuneSystem {
         // Spell aus der Rune auslesen
         ItemMeta runeMeta = runeItem.getItemMeta();
         PersistentDataContainer runeData = runeMeta.getPersistentDataContainer();
-        String spellTypeStr = runeData.get(new NamespacedKey(plugin, "spell_type"), PersistentDataType.STRING);
+        String spellTypeStr = runeData.get(new NamespacedKey(MagicWands.getInstance(), "spell_type"), PersistentDataType.STRING);
         
         if (spellTypeStr == null) {
             player.sendMessage(ChatColor.RED + "Ungültige Zauber-Rune!");
@@ -137,5 +122,15 @@ public class SpellRuneSystem {
         } catch (IllegalArgumentException e) {
             player.sendMessage(ChatColor.RED + "Ungültiger Zauberspruch in der Rune!");
         }
+    }
+
+    private static boolean isSpellRune(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return false;
+        
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        
+        return data.has(new NamespacedKey(MagicWands.getInstance(), "spell_rune"), PersistentDataType.BOOLEAN) &&
+                Boolean.TRUE.equals(data.get(new NamespacedKey(MagicWands.getInstance(), "spell_rune"), PersistentDataType.BOOLEAN));
     }
 }

@@ -1,10 +1,15 @@
 package de.Chaos.magicWands.Logic;
 
 import de.Chaos.magicWands.Enums.Spell;
+
+import de.Chaos.magicWands.Listeners.ManaDisplayListener;
 import org.bukkit.entity.Player;
+import org.bukkit.boss.BossBar;
+
 import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,6 +20,8 @@ public class SpellRegistry {
     private static final Map<String, Long> playerCooldowns = new HashMap<>();
     private static final Map<UUID, Spell> activeSpells = new HashMap<>();
     private static Plugin pluginInstance;
+    private static final Map<UUID, List<Spell>> playerSpells = new HashMap<>();
+    private static final Map<UUID, Integer> playerSpellSlots = new HashMap<>();
 
     /**
      * Initialisiert das SpellRegistry mit der Plugin-Instanz.
@@ -34,6 +41,11 @@ public class SpellRegistry {
      * @param spell Der zu aktivierende Zauberspruch
      */
     public static void setActiveSpell(Player player, Spell spell) {
+        // Methode zum Setzen des Mana-Regen-Cooldowns in Wand.java hinzufügen
+        // public void setManaRegenCooldown() {
+        //     manaRegenCooldowns.put(this.wandId, System.currentTimeMillis() + MANA_REGEN_COOLDOWN);
+        // }
+
         activeSpells.put(player.getUniqueId(), spell);
 
         // Fancy spell selection message with element color
@@ -75,123 +87,61 @@ public class SpellRegistry {
             // Cooldown progress bar
             int totalCooldown = spell.getCooldownSeconds();
             int remainingSeconds = (int) (remainingCooldown / 1000);
-            String progressBar = createProgressBar(remainingSeconds, totalCooldown, 20);
+            String progressBar = createProgressBar(remainingSeconds, totalCooldown);
             player.sendMessage("§7" + progressBar);
             return;
         }
 
         // Mana prüfen
-        int currentMana = wand.getCurrentMana();
-        int manaCost = spell.getManaCost();
+        double currentMana = wand.getCurrentMana();
+        double manaCost = spell.getManaCost();
 
         if (currentMana < manaCost) {
             player.sendMessage("§4🔷 §cNicht genug Mana!");
             player.sendMessage("§7Benötigt: §b" + manaCost + " §7| Verfügbar: §b" + currentMana);
 
-            // Mana progress bar
-            String manaBar = createProgressBar(currentMana, wand.getMaxMana(), 20);
-            player.sendMessage("§7Mana: §b" + manaBar + " §f(" + currentMana + "/" + wand.getMaxMana() + ")");
             return;
         }
 
-        // Pre-cast effects
         String elementColor = getElementColor(spell);
-        player.sendMessage("§7═══════════════════════════");
-        player.sendMessage("§f🔮 §aZauber wird gewirkt...");
-        player.sendMessage("§f⚡ " + elementColor + spell.getDisplayName() + " §7wird entfesselt!");
+
 
         // Mana abziehen
         wand.setCurrentMana(currentMana - manaCost);
 
         // Mana usage display
-        String newManaBar = createProgressBar(wand.getCurrentMana(), wand.getMaxMana(), 20);
-        player.sendMessage("§f🔷 §7Mana: §b" + newManaBar + " §f(" + wand.getCurrentMana() + "/" + wand.getMaxMana() + ")");
-        player.sendMessage("§7═══════════════════════════");
+
+
+        // Aktualisiere die Mana-Bar sofort
+        BossBar bossBar = ManaDisplayListener.getPlayerBossBar(player);
+        if (bossBar != null) {
+            ManaDisplayListener.updateManaBar(player, wand, bossBar);
+        }
 
         try {
             // ZAUBER AUSFÜHREN - JETZT MIT PLUGIN!
             spell.cast(player, pluginInstance);
 
             // Success message after a short delay
-            pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () -> {
-                player.sendMessage(elementColor + "✨ " + spell.getDisplayName() + " §awurde erfolgreich gewirkt!");
-            }, 10L);
+            pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () -> player.sendMessage(elementColor + "✨ " + spell.getDisplayName() + " §awurde erfolgreich gewirkt!"), 10L);
 
         } catch (Exception e) {
             player.sendMessage("§4✖ §cFehler beim Wirken des Zaubers!");
             pluginInstance.getLogger().severe("Error casting spell " + spell.name() + " for player " + player.getName() + ": " + e.getMessage());
             e.printStackTrace();
 
-            // Mana zurückgeben bei Fehler
-            wand.setCurrentMana(currentMana);
+            // Mana wird bei Fehlern nicht zurückgegeben, da der Versuch bereits Mana kostet.
             return;
         }
 
         // Cooldown setzen
         setCooldown(playerId, spell);
 
+        // Setze den Mana-Regenerations-Cooldown für den Zauberstab
+        wand.setManaRegenCooldown();
+
         // Cooldown notification
         player.sendMessage("§7⏰ Cooldown: §e" + spell.getCooldownSeconds() + " Sekunden");
-    }
-
-    /**
-     * Gibt den aktiven Zauberspruch eines Spielers zurück.
-     *
-     * @param player Der Spieler
-     * @return Der aktive Zauberspruch oder null
-     */
-    public static Spell getActiveSpell(Player player) {
-        return activeSpells.get(player.getUniqueId());
-    }
-
-    /**
-     * Entfernt den aktiven Zauberspruch eines Spielers.
-     *
-     * @param player Der Spieler
-     */
-    public static void clearActiveSpell(Player player) {
-        Spell previousSpell = activeSpells.remove(player.getUniqueId());
-        if (previousSpell != null) {
-            player.sendMessage("§7🚫 Zauberspruch-Auswahl entfernt: §f" + previousSpell.getDisplayName());
-        } else {
-            player.sendMessage("§7Du hattest keinen Zauberspruch ausgewählt.");
-        }
-    }
-
-    /**
-     * Zeigt detaillierte Cooldown-Informationen für einen Spieler.
-     *
-     * @param player Der Spieler
-     */
-    public static void showCooldowns(Player player) {
-        UUID playerId = player.getUniqueId();
-        boolean hasCooldowns = false;
-
-        player.sendMessage("§7▬▬▬▬▬▬▬ §6⏰ Cooldowns §7▬▬▬▬▬▬▬");
-
-        for (Spell spell : Spell.values()) {
-            if (isOnCooldown(playerId, spell)) {
-                hasCooldowns = true;
-                long remaining = getRemainingCooldown(playerId, spell);
-                int remainingSeconds = (int) (remaining / 1000);
-                String elementColor = getElementColor(spell);
-
-                String progressBar = createProgressBar(
-                        spell.getCooldownSeconds() - remainingSeconds,
-                        spell.getCooldownSeconds(),
-                        10
-                );
-
-                player.sendMessage(elementColor + spell.getDisplayName() + " §7: §e" +
-                        remainingSeconds + "s §7" + progressBar);
-            }
-        }
-
-        if (!hasCooldowns) {
-            player.sendMessage("§a✓ Alle Zaubersprüche bereit!");
-        }
-
-        player.sendMessage("§7▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬");
     }
 
     private static boolean isOnCooldown(UUID playerId, Spell spell) {
@@ -218,17 +168,18 @@ public class SpellRegistry {
     /**
      * Erstellt eine ASCII Progress Bar.
      */
-    private static String createProgressBar(int current, int max, int length) {
-        if (max <= 0) return "§7[" + "█".repeat(length) + "]";
+    private static String createProgressBar(double current, double max) {
+        double percentage = current / max;
+        int filledLength = (int) (20 * percentage);
+        int emptyLength = 20 - filledLength;
 
-        double percentage = (double) current / max;
-        int filled = (int) (percentage * length);
-        int empty = length - filled;
+        // Grüne Farbe für gefüllten Teil
+        // Graue Farbe für leeren Teil
 
-        String filledBar = "§a" + "█".repeat(Math.max(0, filled));
-        String emptyBar = "§7" + "█".repeat(Math.max(0, empty));
-
-        return "§7[" + filledBar + emptyBar + "§7]";
+        return "§a" + // Grüne Farbe für gefüllten Teil
+                "█".repeat(filledLength) +
+                "§7" + // Graue Farbe für leeren Teil
+                "█".repeat(emptyLength);
     }
 
     /**
@@ -243,7 +194,6 @@ public class SpellRegistry {
             case LIGHTNING -> "§e";
             case ARCANE -> "§d";
             case DARK -> "§8";
-            default -> "§7";
         };
     }
 
@@ -253,6 +203,8 @@ public class SpellRegistry {
     public static void cleanup() {
         playerCooldowns.clear();
         activeSpells.clear();
+        playerSpells.clear();
+        playerSpellSlots.clear();
         pluginInstance = null;
     }
 }

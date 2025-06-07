@@ -2,30 +2,34 @@ package de.Chaos.magicWands.Enums;
 
 import org.bukkit.*;
 import org.bukkit.entity.*;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.Objects;
+
 public enum Spell {
     FIREBALL("Feuerball", 20, 5, ElementDamage.FIRE) {
         @Override
         public void cast(Player player, Plugin plugin) {
-            // Casting Animation
+            // Get target location first
+            Location targetLoc = getTargetLocation(player, 30);
+
+            // Casting Animation at player's hand
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
                 public void run() {
                     if (ticks >= 20) {
-                        // Explosive Fireball Launch
-                        launchFireball(player, plugin);
+                        // Launch fireball towards target
+                        launchFireball(player, targetLoc, plugin);
                         cancel();
                         return;
                     }
 
-                    // Charging Animation
+                    // Charging Animation at hand
                     double angle = ticks * 0.5;
                     Location handLoc = player.getEyeLocation().add(
                             Math.cos(angle) * 0.5,
@@ -45,31 +49,40 @@ public enum Spell {
             }.runTaskTimer(plugin, 0, 1);
         }
 
-        private void launchFireball(Player player, Plugin plugin) {
+        private void launchFireball(Player player, Location targetLoc, Plugin plugin) {
             player.getWorld().playSound(player.getLocation(), Sound.ENTITY_DRAGON_FIREBALL_EXPLODE, 1.5f, 0.8f);
 
-            // Create projectile trail
-            Vector direction = player.getEyeLocation().getDirection().normalize();
+            // Calculate direction to target
+            Vector direction = targetLoc.toVector().subtract(player.getEyeLocation().toVector()).normalize();
             Location startLoc = player.getEyeLocation().add(direction);
 
             new BukkitRunnable() {
-                int distance = 0;
-                Location currentLoc = startLoc.clone();
+                final Location currentLoc = startLoc.clone();
+                double distanceTraveled = 0;
+                final double maxDistance = player.getLocation().distance(targetLoc) + 5;
 
                 @Override
                 public void run() {
-                    if (distance >= 20) {
-                        explodeFireball(currentLoc, player, plugin);
+                    if (distanceTraveled >= maxDistance) {
+                        explodeFireball(currentLoc, player);
                         cancel();
                         return;
                     }
 
-                    // Check for collision
-                    if (currentLoc.getBlock().getType().isSolid() ||
-                            !currentLoc.getWorld().getNearbyEntities(currentLoc, 1, 1, 1).isEmpty()) {
-                        explodeFireball(currentLoc, player, plugin);
+                    // Check for collision with blocks or entities
+                    if (currentLoc.getBlock().getType().isSolid()) {
+                        explodeFireball(currentLoc, player);
                         cancel();
                         return;
+                    }
+
+                    // Check for entity collision
+                    for (Entity entity : currentLoc.getWorld().getNearbyEntities(currentLoc, 0.5, 0.5, 0.5)) {
+                        if (entity instanceof LivingEntity && !entity.equals(player)) {
+                            explodeFireball(currentLoc, player);
+                            cancel();
+                            return;
+                        }
                     }
 
                     // Projectile effects
@@ -77,13 +90,13 @@ public enum Spell {
                     currentLoc.getWorld().spawnParticle(Particle.SMOKE, currentLoc, 3, 0.1, 0.1, 0.1, 0.02);
                     currentLoc.getWorld().spawnParticle(Particle.LAVA, currentLoc, 2, 0.1, 0.1, 0.1, 0.01);
 
-                    currentLoc.add(direction);
-                    distance++;
+                    currentLoc.add(direction.clone().multiply(0.5));
+                    distanceTraveled += 0.5;
                 }
             }.runTaskTimer(plugin, 0, 1);
         }
 
-        private void explodeFireball(Location loc, Player player, Plugin plugin) {
+        private void explodeFireball(Location loc, Player player) {
             // Massive explosion effect
             loc.getWorld().spawnParticle(Particle.EXPLOSION, loc, 5, 1, 1, 1, 0.1);
             loc.getWorld().spawnParticle(Particle.FLAME, loc, 50, 2, 2, 2, 0.1);
@@ -107,22 +120,26 @@ public enum Spell {
     ICE_SHARD("Eissplitter", 15, 4, ElementDamage.WATER) {
         @Override
         public void cast(Player player, Plugin plugin) {
+            // Get target location
+            Location targetLoc = getTargetLocation(player, 25);
+
             // Ice formation animation
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
                 public void run() {
                     if (ticks >= 15) {
-                        launchIceShards(player, plugin);
+                        launchIceShards(player, targetLoc, plugin);
                         cancel();
                         return;
                     }
 
-                    // Frost gathering effect
+                    // Frost gathering effect at hand
                     Location handLoc = player.getEyeLocation().add(0, -0.3, 0);
                     player.getWorld().spawnParticle(Particle.SNOWFLAKE, handLoc, 5, 0.3, 0.3, 0.3, 0.01);
+                    // Fixed: Use BlockData instead of ItemStack for BLOCK_CRUMBLE
                     player.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, handLoc, 3, 0.2, 0.2, 0.2, 0.01,
-                            new ItemStack(Material.ICE));
+                            Material.ICE.createBlockData());
 
                     if (ticks % 3 == 0) {
                         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GLASS_HIT, 0.7f, 1.8f);
@@ -133,28 +150,29 @@ public enum Spell {
             }.runTaskTimer(plugin, 0, 1);
         }
 
-        private void launchIceShards(Player player, Plugin plugin) {
+        private void launchIceShards(Player player, Location targetLoc, Plugin plugin) {
             player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GLASS_BREAK, 1.5f, 0.8f);
 
-            // Launch multiple ice shards
+            // Calculate base direction to target
+            Vector baseDirection = targetLoc.toVector().subtract(player.getEyeLocation().toVector()).normalize();
+            Location startLoc = player.getEyeLocation().add(baseDirection);
+
+            // Launch multiple ice shards with slight spread
             for (int i = 0; i < 5; i++) {
-                Vector baseDirection = player.getEyeLocation().getDirection().normalize();
                 Vector shardDirection = baseDirection.clone().add(new Vector(
-                        (Math.random() - 0.5) * 0.5,
                         (Math.random() - 0.5) * 0.3,
-                        (Math.random() - 0.5) * 0.5
+                        (Math.random() - 0.5) * 0.2,
+                        (Math.random() - 0.5) * 0.3
                 )).normalize();
 
-                Location startLoc = player.getEyeLocation().add(shardDirection);
-                final int shardIndex = i;
-
                 new BukkitRunnable() {
-                    int distance = 0;
-                    Location currentLoc = startLoc.clone();
+                    final Location currentLoc = startLoc.clone();
+                    double distanceTraveled = 0;
+                    final double maxDistance = player.getLocation().distance(targetLoc) + 3;
 
                     @Override
                     public void run() {
-                        if (distance >= 15) {
+                        if (distanceTraveled >= maxDistance) {
                             iceShardImpact(currentLoc, player);
                             cancel();
                             return;
@@ -167,21 +185,31 @@ public enum Spell {
                             return;
                         }
 
-                        // Shard trail effects
+                        // Check for entity collision
+                        for (Entity entity : currentLoc.getWorld().getNearbyEntities(currentLoc, 0.5, 0.5, 0.5)) {
+                            if (entity instanceof LivingEntity && !entity.equals(player)) {
+                                iceShardImpact(currentLoc, player);
+                                cancel();
+                                return;
+                            }
+                        }
+
+                        // Shard trail effects - Fixed: Use BlockData instead of ItemStack
                         currentLoc.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, currentLoc, 3, 0.1, 0.1, 0.1, 0.01,
-                                new ItemStack(Material.ICE));
+                                Material.ICE.createBlockData());
                         currentLoc.getWorld().spawnParticle(Particle.SNOWFLAKE, currentLoc, 2, 0.05, 0.05, 0.05, 0.01);
 
-                        currentLoc.add(shardDirection);
-                        distance++;
+                        currentLoc.add(shardDirection.clone().multiply(0.4));
+                        distanceTraveled += 0.4;
                     }
-                }.runTaskTimer(plugin, shardIndex * 2, 1);
+                }.runTaskTimer(plugin, i * 2, 1);
             }
         }
 
         private void iceShardImpact(Location loc, Player player) {
+            // Fixed: Use BlockData instead of ItemStack for BLOCK_CRUMBLE
             loc.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, loc, 15, 0.5, 0.5, 0.5, 0.1,
-                    new ItemStack(Material.ICE));
+                    Material.ICE.createBlockData());
             loc.getWorld().spawnParticle(Particle.SNOWFLAKE, loc, 10, 0.3, 0.3, 0.3, 0.05);
 
             for (Entity entity : loc.getWorld().getNearbyEntities(loc, 2, 2, 2)) {
@@ -197,23 +225,22 @@ public enum Spell {
     LIGHTNING_STRIKE("Blitzschlag", 35, 10, ElementDamage.LIGHTNING) {
         @Override
         public void cast(Player player, Plugin plugin) {
-            Location target = player.getTargetBlockExact(15) != null ?
-                    player.getTargetBlockExact(15).getLocation() :
-                    player.getLocation().add(player.getEyeLocation().getDirection().multiply(10));
+            // Get target location where player is looking
+            Location targetLoc = getTargetLocation(player, 25);
 
-            // Storm buildup
+            // Storm buildup at target location
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
                 public void run() {
                     if (ticks >= 30) {
-                        strikeWithLightning(target, player, plugin);
+                        strikeWithLightning(targetLoc, player, plugin);
                         cancel();
                         return;
                     }
 
-                    // Storm clouds gathering
-                    Location skyLoc = target.clone().add(0, 20, 0);
+                    // Storm clouds gathering above target
+                    Location skyLoc = targetLoc.clone().add(0, 20, 0);
                     skyLoc.getWorld().spawnParticle(Particle.CLOUD, skyLoc, 10, 3, 1, 3, 0.02);
                     skyLoc.getWorld().spawnParticle(Particle.SMOKE, skyLoc, 5, 2, 1, 2, 0.01);
 
@@ -221,8 +248,8 @@ public enum Spell {
                         skyLoc.getWorld().playSound(skyLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.3f, 0.5f);
                     }
 
-                    // Electric charge building up
-                    target.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, target.clone().add(0, 1, 0),
+                    // Electric charge building up at target
+                    targetLoc.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, targetLoc.clone().add(0, 1, 0),
                             3, 0.5, 2, 0.5, 0.01);
 
                     ticks++;
@@ -231,9 +258,17 @@ public enum Spell {
         }
 
         private void strikeWithLightning(Location target, Player player, Plugin plugin) {
-            // Epic lightning strike
+            // Epic lightning strike at target location
             target.getWorld().strikeLightningEffect(target);
             target.getWorld().playSound(target, Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 2f, 1f);
+
+            // Damage entities at strike location
+            for (Entity entity : target.getWorld().getNearbyEntities(target, 3, 3, 3)) {
+                if (entity instanceof LivingEntity livingTarget && !entity.equals(player)) {
+                    livingTarget.damage(15.0, player);
+                    livingTarget.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 100, 1));
+                }
+            }
 
             // Chain lightning effect
             new BukkitRunnable() {
@@ -252,11 +287,11 @@ public enum Spell {
                     double nearestDistance = Double.MAX_VALUE;
 
                     for (Entity entity : currentLoc.getWorld().getNearbyEntities(currentLoc, 8, 8, 8)) {
-                        if (entity instanceof LivingEntity target && !entity.equals(player)) {
+                        if (entity instanceof LivingEntity livingEntity && !entity.equals(player)) {
                             double distance = entity.getLocation().distance(currentLoc);
                             if (distance < nearestDistance) {
                                 nearestDistance = distance;
-                                nearestEnemy = target;
+                                nearestEnemy = livingEntity;
                             }
                         }
                     }
@@ -304,18 +339,21 @@ public enum Spell {
     VOID_ORB("Leerenkugel", 50, 12, ElementDamage.DARK) {
         @Override
         public void cast(Player player, Plugin plugin) {
-            // Void energy gathering
+            // Get target location
+            Location targetLoc = getTargetLocation(player, 20);
+
+            // Void energy gathering at hand
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
                 public void run() {
                     if (ticks >= 40) {
-                        createVoidOrb(player, plugin);
+                        createVoidOrb(targetLoc, player, plugin);
                         cancel();
                         return;
                     }
 
-                    // Dark energy swirling
+                    // Dark energy swirling at hand
                     Location handLoc = player.getEyeLocation().add(0, -0.3, 0);
                     double angle = ticks * 0.3;
 
@@ -340,19 +378,17 @@ public enum Spell {
             }.runTaskTimer(plugin, 0, 1);
         }
 
-        private void createVoidOrb(Player player, Plugin plugin) {
-            Location orbLoc = player.getEyeLocation().add(player.getEyeLocation().getDirection().multiply(3));
-
+        private void createVoidOrb(Location orbLoc, Player player, Plugin plugin) {
             player.getWorld().playSound(orbLoc, Sound.ENTITY_ENDERMAN_SCREAM, 1.5f, 0.3f);
 
-            // Void orb existence and effects
+            // Void orb existence and effects at target location
             new BukkitRunnable() {
                 int lifetime = 0;
 
                 @Override
                 public void run() {
                     if (lifetime >= 100) {
-                        voidOrbExplode(orbLoc, player, plugin);
+                        voidOrbExplode(orbLoc, player);
                         cancel();
                         return;
                     }
@@ -385,7 +421,7 @@ public enum Spell {
             }.runTaskTimer(plugin, 0, 1);
         }
 
-        private void voidOrbExplode(Location loc, Player player, Plugin plugin) {
+        private void voidOrbExplode(Location loc, Player player) {
             // Void explosion
             loc.getWorld().spawnParticle(Particle.PORTAL, loc, 100, 3, 3, 3, 0.2);
             loc.getWorld().spawnParticle(Particle.END_ROD, loc, 50, 2, 2, 2, 0.1);
@@ -413,24 +449,26 @@ public enum Spell {
     ARCANE_BURST("Arkane Explosion", 30, 8, ElementDamage.ARCANE) {
         @Override
         public void cast(Player player, Plugin plugin) {
+            // Get target location
+            Location targetLoc = getTargetLocation(player, 15);
+
             // Arcane energy buildup
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
                 public void run() {
                     if (ticks >= 25) {
-                        arcaneExplosion(player, plugin);
+                        arcaneExplosion(targetLoc, player, plugin);
                         cancel();
                         return;
                     }
 
-                    // Magical energy rings
-                    Location center = player.getLocation().add(0, 1, 0);
+                    // Magical energy rings at target location
                     double radius = ticks * 0.1;
 
                     for (int i = 0; i < 16; i++) {
                         double angle = (Math.PI * 2 * i) / 16;
-                        Location ringLoc = center.clone().add(
+                        Location ringLoc = targetLoc.clone().add(
                                 Math.cos(angle) * radius,
                                 Math.sin(ticks * 0.2) * 0.5,
                                 Math.sin(angle) * radius
@@ -441,7 +479,7 @@ public enum Spell {
                     }
 
                     if (ticks % 5 == 0) {
-                        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 0.8f, 1.2f);
+                        targetLoc.getWorld().playSound(targetLoc, Sound.BLOCK_ENCHANTMENT_TABLE_USE, 0.8f, 1.2f);
                     }
 
                     ticks++;
@@ -449,10 +487,8 @@ public enum Spell {
             }.runTaskTimer(plugin, 0, 1);
         }
 
-        private void arcaneExplosion(Player player, Plugin plugin) {
-            Location center = player.getLocation().add(0, 1, 0);
-
-            // Massive arcane explosion
+        private void arcaneExplosion(Location center, Player player, Plugin plugin) {
+            // Massive arcane explosion at target location
             new BukkitRunnable() {
                 double radius = 0;
 
@@ -487,7 +523,7 @@ public enum Spell {
                         }
                     }
 
-                    player.getWorld().playSound(center, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.8f);
+                    center.getWorld().playSound(center, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.8f);
                     radius += 0.8;
                 }
             }.runTaskTimer(plugin, 0, 2);
@@ -523,4 +559,15 @@ public enum Spell {
     }
 
     public abstract void cast(Player player, Plugin plugin);
+
+    // Helper method to get target location based on where player is looking
+    private static Location getTargetLocation(Player player, int maxDistance) {
+        // Try to get the block the player is looking at
+        if (player.getTargetBlockExact(maxDistance) != null) {
+            return Objects.requireNonNull(player.getTargetBlockExact(maxDistance)).getLocation().add(0, 1, 0);
+        }
+
+        // If no block is found, use the direction they're looking
+        return player.getEyeLocation().add(player.getEyeLocation().getDirection().multiply(maxDistance));
+    }
 }

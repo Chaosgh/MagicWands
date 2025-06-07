@@ -1,55 +1,56 @@
 package de.Chaos.magicWands.Enums;
 
-import de.Chaos.magicWands.Logic.UpgradeSystem;
 import org.bukkit.Material;
+import de.Chaos.magicWands.Logic.UpgradeSystem.RuneType;
 
 public enum WandCore {
-    OAK(100, 10000, Material.STICK, "Eichenkern"),
-    BIRCH(120, 10001, Material.BIRCH_WOOD, "Birkenkern"),
-    BLAZE_ROD(200, 10002, Material.BLAZE_ROD, "Blazekern"),
-    ENDER_ROD(250, 10003, Material.END_ROD, "Endkern"),
-    NETHER_STAR(500, 10004, Material.NETHER_STAR, "Netherkern");
+    OAK(100.0, Material.STICK, 0.5),
+    BIRCH(120.0, Material.BIRCH_WOOD, 1.0),
+    BLAZE_ROD(200.0, Material.BLAZE_ROD, 1.5),
+    ENDER_ROD(250.0, Material.END_ROD, 2.0),
+    NETHER_STAR(500.0, Material.NETHER_STAR, 2.5);
 
-    private final int manaCapacity;
-    private final int customModelData;
+    private final double manaCapacity;
     private final Material material;
-    private final String displayName;
+    private final double manaRegenRate;
 
-    WandCore(int manaCapacity, int customModelData, Material material, String displayName) {
+    WandCore(double manaCapacity, Material material, double manaRegenRate) {
         this.manaCapacity = manaCapacity;
-        this.customModelData = customModelData;
         this.material = material;
-        this.displayName = displayName;
+        this.manaRegenRate = manaRegenRate;
     }
 
-    public int getManaCapacity() {
+    public double getManaCapacity() {
         return manaCapacity;
-    }
-
-    public int getCustomModelData() {
-        return customModelData;
     }
 
     public Material getMaterial() {
         return material;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public double getManaRegenRate() {
+        return manaRegenRate;
     }
 
-    public WandCore upgrade(UpgradeSystem.RuneType type, int value, ElementDamage element) {
-    int upgradedMana = this.getManaCapacity();
-
-    switch (type) {
-            case MANA:
-                upgradedMana += value;
-               break;
-            // Für andere Typen wie SPEED, CRIT, ELEMENT macht ein Upgrade auf den Core evtl. keinen Sinn
-            default:
+    public WandCore upgrade(RuneType runeType, int level) {
+        // Basierend auf dem aktuellen Kern und der Rune den nächsten Kern bestimmen
+        switch (this) {
+            case OAK:
+                if (runeType == RuneType.MANA && level >= 2) return BIRCH;
                 break;
+            case BIRCH:
+                if (runeType == RuneType.MANA && level >= 3) return BLAZE_ROD;
+                break;
+            case BLAZE_ROD:
+                if (runeType == RuneType.MANA && level >= 4) return ENDER_ROD;
+                break;
+            case ENDER_ROD:
+                if (runeType == RuneType.MANA && level >= 5) return NETHER_STAR;
+                break;
+            case NETHER_STAR:
+                // Höchster Kern, keine weiteren Upgrades möglich
+                return this;
         }
-
-        return null;
+        return this;
     }
-}
+} 

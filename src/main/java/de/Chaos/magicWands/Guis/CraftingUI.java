@@ -5,6 +5,7 @@ import de.Chaos.magicWands.Enums.WandFocus;
 import de.Chaos.magicWands.Enums.WandGrip;
 import de.Chaos.magicWands.Logic.Wand;
 import de.Chaos.magicWands.Logic.WandBuilder;
+import de.Chaos.magicWands.Logic.WandUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -57,7 +58,7 @@ public class CraftingUI implements Listener {
             ItemStack gripItem = inv.getItem(4);
             ItemStack focusItem = inv.getItem(5);
 
-            if (isValid(coreItem) || isValid(gripItem) || isValid(focusItem)) {
+            if (isInvalid(coreItem) || isInvalid(gripItem) || isInvalid(focusItem)) {
                 player.sendMessage("§cBitte alle drei Komponenten einlegen.");
                 return;
             }
@@ -72,7 +73,7 @@ public class CraftingUI implements Listener {
             }
 
             Wand wand = WandBuilder.buildWand(core, grip, focus);
-            ItemStack wandItem = wand.toItemStack(plugin);
+            ItemStack wandItem = WandUtils.saveWandToItem(wand);
             player.getInventory().addItem(wandItem);
             player.sendMessage("§aDu hast erfolgreich einen Zauberstab erstellt!");
             player.closeInventory();
@@ -81,7 +82,7 @@ public class CraftingUI implements Listener {
         }
     }
 
-    private boolean isValid(ItemStack item) {
+    private boolean isInvalid(ItemStack item) {
         return item == null || !item.hasItemMeta();
     }
 
