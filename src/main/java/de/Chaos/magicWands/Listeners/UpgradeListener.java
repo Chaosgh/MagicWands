@@ -16,22 +16,18 @@ public class UpgradeListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        // Nur Rechtsklicks verarbeiten
         if (!event.getAction().name().contains("RIGHT_CLICK")) return;
         
-        // Doppelte Events vermeiden (nur Haupthand verarbeiten)
         if (event.getHand() != EquipmentSlot.HAND) return;
         
         Player player = event.getPlayer();
         ItemStack heldItem = player.getInventory().getItemInMainHand();
         ItemStack offhandItem = player.getInventory().getItemInOffHand();
 
-        // Prüfen, ob der Spieler eine Rune in der Haupthand und einen Zauberstab in der Nebenhand hält
         if (UpgradeSystem.isUpgradeRune(heldItem) && offhandItem.getType() == Material.BLAZE_ROD) {
             event.setCancelled(true);
             UpgradeSystem.applyUpgrade(player, offhandItem, heldItem);
         }
-        // Oder umgekehrt: Zauberstab in der Haupthand und Rune in der Nebenhand
         else if (heldItem.getType() == Material.BLAZE_ROD && UpgradeSystem.isUpgradeRune(offhandItem)) {
             event.setCancelled(true);
             UpgradeSystem.applyUpgrade(player, heldItem, offhandItem);

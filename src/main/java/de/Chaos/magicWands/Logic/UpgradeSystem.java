@@ -19,7 +19,7 @@ public class UpgradeSystem {
         plugin = pl;
     }
 
-    // Zentrale Keys für PersistentData
+    //  Keys für PersistentData
     private static NamespacedKey KEY_TYPE() {
         return new NamespacedKey(plugin, "rune_type");
     }
@@ -112,6 +112,7 @@ public class UpgradeSystem {
 
     /**
      * Enum für die verschiedenen Typen von Upgrade-Runen.
+     * #todo muss noch impementiert werden
      */
     public enum RuneType {
         MANA(),

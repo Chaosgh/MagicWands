@@ -42,7 +42,6 @@ public final class MagicWands extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new SpellRuneListener(), this);
         Bukkit.getPluginManager().registerEvents(new ManaDisplayListener(), this);
 
-        // Starte Mana-Display
         ManaDisplayListener.startManaDisplayTask();
 
         getLogger().info("MagicWands Plugin wurde aktiviert!");
@@ -50,12 +49,10 @@ public final class MagicWands extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Clean up SpellRegistry on plugin shutdown
         SpellRegistry.cleanup();
         getLogger().info("MagicWands Plugin wurde deaktiviert!");
     }
 
-    // Getter method for other classes to access the plugin instance
     public static MagicWands getInstance() {
         return instance;
     }

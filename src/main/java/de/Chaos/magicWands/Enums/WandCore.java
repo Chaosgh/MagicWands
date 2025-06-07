@@ -33,7 +33,6 @@ public enum WandCore {
     }
 
     public WandCore upgrade(RuneType runeType, int level) {
-        // Basierend auf dem aktuellen Kern und der Rune den nächsten Kern bestimmen
         switch (this) {
             case OAK:
                 if (runeType == RuneType.MANA && level >= 2) return BIRCH;
@@ -48,7 +47,6 @@ public enum WandCore {
                 if (runeType == RuneType.MANA && level >= 5) return NETHER_STAR;
                 break;
             case NETHER_STAR:
-                // Höchster Kern, keine weiteren Upgrades möglich
                 return this;
         }
         return this;

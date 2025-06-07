@@ -14,22 +14,18 @@ public enum Spell {
     FIREBALL("Feuerball", 20, 5, ElementDamage.FIRE) {
         @Override
         public void cast(Player player, Plugin plugin) {
-            // Get target location first
             Location targetLoc = getTargetLocation(player, 30);
 
-            // Casting Animation at player's hand
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
                 public void run() {
                     if (ticks >= 20) {
-                        // Launch fireball towards target
                         launchFireball(player, targetLoc, plugin);
                         cancel();
                         return;
                     }
 
-                    // Charging Animation at hand
                     double angle = ticks * 0.5;
                     Location handLoc = player.getEyeLocation().add(
                             Math.cos(angle) * 0.5,
@@ -52,7 +48,6 @@ public enum Spell {
         private void launchFireball(Player player, Location targetLoc, Plugin plugin) {
             player.getWorld().playSound(player.getLocation(), Sound.ENTITY_DRAGON_FIREBALL_EXPLODE, 1.5f, 0.8f);
 
-            // Calculate direction to target
             Vector direction = targetLoc.toVector().subtract(player.getEyeLocation().toVector()).normalize();
             Location startLoc = player.getEyeLocation().add(direction);
 
@@ -69,14 +64,12 @@ public enum Spell {
                         return;
                     }
 
-                    // Check for collision with blocks or entities
                     if (currentLoc.getBlock().getType().isSolid()) {
                         explodeFireball(currentLoc, player);
                         cancel();
                         return;
                     }
 
-                    // Check for entity collision
                     for (Entity entity : currentLoc.getWorld().getNearbyEntities(currentLoc, 0.5, 0.5, 0.5)) {
                         if (entity instanceof LivingEntity && !entity.equals(player)) {
                             explodeFireball(currentLoc, player);
@@ -85,7 +78,6 @@ public enum Spell {
                         }
                     }
 
-                    // Projectile effects
                     currentLoc.getWorld().spawnParticle(Particle.FLAME, currentLoc, 8, 0.2, 0.2, 0.2, 0.05);
                     currentLoc.getWorld().spawnParticle(Particle.SMOKE, currentLoc, 3, 0.1, 0.1, 0.1, 0.02);
                     currentLoc.getWorld().spawnParticle(Particle.LAVA, currentLoc, 2, 0.1, 0.1, 0.1, 0.01);
@@ -97,7 +89,6 @@ public enum Spell {
         }
 
         private void explodeFireball(Location loc, Player player) {
-            // Massive explosion effect
             loc.getWorld().spawnParticle(Particle.EXPLOSION, loc, 5, 1, 1, 1, 0.1);
             loc.getWorld().spawnParticle(Particle.FLAME, loc, 50, 2, 2, 2, 0.1);
             loc.getWorld().spawnParticle(Particle.SMOKE, loc, 30, 1.5, 1.5, 1.5, 0.05);
@@ -106,7 +97,6 @@ public enum Spell {
             loc.getWorld().playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.8f);
             loc.getWorld().playSound(loc, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 0.5f);
 
-            // Damage and burn enemies
             for (Entity entity : loc.getWorld().getNearbyEntities(loc, 4, 4, 4)) {
                 if (entity instanceof LivingEntity target && !entity.equals(player)) {
                     target.setFireTicks(100);
@@ -120,10 +110,8 @@ public enum Spell {
     ICE_SHARD("Eissplitter", 15, 4, ElementDamage.WATER) {
         @Override
         public void cast(Player player, Plugin plugin) {
-            // Get target location
             Location targetLoc = getTargetLocation(player, 25);
 
-            // Ice formation animation
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
@@ -134,10 +122,8 @@ public enum Spell {
                         return;
                     }
 
-                    // Frost gathering effect at hand
                     Location handLoc = player.getEyeLocation().add(0, -0.3, 0);
                     player.getWorld().spawnParticle(Particle.SNOWFLAKE, handLoc, 5, 0.3, 0.3, 0.3, 0.01);
-                    // Fixed: Use BlockData instead of ItemStack for BLOCK_CRUMBLE
                     player.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, handLoc, 3, 0.2, 0.2, 0.2, 0.01,
                             Material.ICE.createBlockData());
 
@@ -153,11 +139,9 @@ public enum Spell {
         private void launchIceShards(Player player, Location targetLoc, Plugin plugin) {
             player.getWorld().playSound(player.getLocation(), Sound.BLOCK_GLASS_BREAK, 1.5f, 0.8f);
 
-            // Calculate base direction to target
             Vector baseDirection = targetLoc.toVector().subtract(player.getEyeLocation().toVector()).normalize();
             Location startLoc = player.getEyeLocation().add(baseDirection);
 
-            // Launch multiple ice shards with slight spread
             for (int i = 0; i < 5; i++) {
                 Vector shardDirection = baseDirection.clone().add(new Vector(
                         (Math.random() - 0.5) * 0.3,
@@ -178,14 +162,12 @@ public enum Spell {
                             return;
                         }
 
-                        // Check collision
                         if (currentLoc.getBlock().getType().isSolid()) {
                             iceShardImpact(currentLoc, player);
                             cancel();
                             return;
                         }
 
-                        // Check for entity collision
                         for (Entity entity : currentLoc.getWorld().getNearbyEntities(currentLoc, 0.5, 0.5, 0.5)) {
                             if (entity instanceof LivingEntity && !entity.equals(player)) {
                                 iceShardImpact(currentLoc, player);
@@ -194,7 +176,6 @@ public enum Spell {
                             }
                         }
 
-                        // Shard trail effects - Fixed: Use BlockData instead of ItemStack
                         currentLoc.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, currentLoc, 3, 0.1, 0.1, 0.1, 0.01,
                                 Material.ICE.createBlockData());
                         currentLoc.getWorld().spawnParticle(Particle.SNOWFLAKE, currentLoc, 2, 0.05, 0.05, 0.05, 0.01);
@@ -207,7 +188,6 @@ public enum Spell {
         }
 
         private void iceShardImpact(Location loc, Player player) {
-            // Fixed: Use BlockData instead of ItemStack for BLOCK_CRUMBLE
             loc.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, loc, 15, 0.5, 0.5, 0.5, 0.1,
                     Material.ICE.createBlockData());
             loc.getWorld().spawnParticle(Particle.SNOWFLAKE, loc, 10, 0.3, 0.3, 0.3, 0.05);
@@ -225,10 +205,8 @@ public enum Spell {
     LIGHTNING_STRIKE("Blitzschlag", 35, 10, ElementDamage.LIGHTNING) {
         @Override
         public void cast(Player player, Plugin plugin) {
-            // Get target location where player is looking
             Location targetLoc = getTargetLocation(player, 25);
 
-            // Storm buildup at target location
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
@@ -239,7 +217,6 @@ public enum Spell {
                         return;
                     }
 
-                    // Storm clouds gathering above target
                     Location skyLoc = targetLoc.clone().add(0, 20, 0);
                     skyLoc.getWorld().spawnParticle(Particle.CLOUD, skyLoc, 10, 3, 1, 3, 0.02);
                     skyLoc.getWorld().spawnParticle(Particle.SMOKE, skyLoc, 5, 2, 1, 2, 0.01);
@@ -248,7 +225,6 @@ public enum Spell {
                         skyLoc.getWorld().playSound(skyLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.3f, 0.5f);
                     }
 
-                    // Electric charge building up at target
                     targetLoc.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, targetLoc.clone().add(0, 1, 0),
                             3, 0.5, 2, 0.5, 0.01);
 
@@ -258,11 +234,9 @@ public enum Spell {
         }
 
         private void strikeWithLightning(Location target, Player player, Plugin plugin) {
-            // Epic lightning strike at target location
             target.getWorld().strikeLightningEffect(target);
             target.getWorld().playSound(target, Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 2f, 1f);
 
-            // Damage entities at strike location
             for (Entity entity : target.getWorld().getNearbyEntities(target, 3, 3, 3)) {
                 if (entity instanceof LivingEntity livingTarget && !entity.equals(player)) {
                     livingTarget.damage(15.0, player);
@@ -270,7 +244,6 @@ public enum Spell {
                 }
             }
 
-            // Chain lightning effect
             new BukkitRunnable() {
                 int chains = 0;
                 Location currentLoc = target.clone();
@@ -282,7 +255,6 @@ public enum Spell {
                         return;
                     }
 
-                    // Find nearest enemy for chain
                     LivingEntity nearestEnemy = null;
                     double nearestDistance = Double.MAX_VALUE;
 
@@ -297,7 +269,6 @@ public enum Spell {
                     }
 
                     if (nearestEnemy != null) {
-                        // Lightning chain effect
                         createLightningChain(currentLoc, nearestEnemy.getLocation(), plugin);
                         nearestEnemy.damage(15.0 - (chains * 3), player);
                         nearestEnemy.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 100, 1));
@@ -339,10 +310,8 @@ public enum Spell {
     VOID_ORB("Leerenkugel", 50, 12, ElementDamage.DARK) {
         @Override
         public void cast(Player player, Plugin plugin) {
-            // Get target location
             Location targetLoc = getTargetLocation(player, 20);
 
-            // Void energy gathering at hand
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
@@ -353,7 +322,6 @@ public enum Spell {
                         return;
                     }
 
-                    // Dark energy swirling at hand
                     Location handLoc = player.getEyeLocation().add(0, -0.3, 0);
                     double angle = ticks * 0.3;
 
@@ -381,7 +349,6 @@ public enum Spell {
         private void createVoidOrb(Location orbLoc, Player player, Plugin plugin) {
             player.getWorld().playSound(orbLoc, Sound.ENTITY_ENDERMAN_SCREAM, 1.5f, 0.3f);
 
-            // Void orb existence and effects at target location
             new BukkitRunnable() {
                 int lifetime = 0;
 
@@ -393,12 +360,10 @@ public enum Spell {
                         return;
                     }
 
-                    // Void orb visual
                     orbLoc.getWorld().spawnParticle(Particle.PORTAL, orbLoc, 15, 0.3, 0.3, 0.3, 0.1);
                     orbLoc.getWorld().spawnParticle(Particle.SMOKE, orbLoc, 5, 0.2, 0.2, 0.2, 0.02);
                     orbLoc.getWorld().spawnParticle(Particle.END_ROD, orbLoc, 3, 0.1, 0.1, 0.1, 0.01);
 
-                    // Gravity well effect
                     for (Entity entity : orbLoc.getWorld().getNearbyEntities(orbLoc, 6, 6, 6)) {
                         if (entity instanceof LivingEntity target && !entity.equals(player)) {
                             Vector pullVector = orbLoc.toVector().subtract(entity.getLocation().toVector());
@@ -422,7 +387,6 @@ public enum Spell {
         }
 
         private void voidOrbExplode(Location loc, Player player) {
-            // Void explosion
             loc.getWorld().spawnParticle(Particle.PORTAL, loc, 100, 3, 3, 3, 0.2);
             loc.getWorld().spawnParticle(Particle.END_ROD, loc, 50, 2, 2, 2, 0.1);
             loc.getWorld().spawnParticle(Particle.SMOKE, loc, 30, 2, 2, 2, 0.05);
@@ -438,7 +402,6 @@ public enum Spell {
                     target.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 100, 2));
                     target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 60, 1));
 
-                    // Knockback
                     Vector knockback = entity.getLocation().toVector().subtract(loc.toVector()).normalize().multiply(2);
                     entity.setVelocity(knockback);
                 }
@@ -449,10 +412,8 @@ public enum Spell {
     ARCANE_BURST("Arkane Explosion", 30, 8, ElementDamage.ARCANE) {
         @Override
         public void cast(Player player, Plugin plugin) {
-            // Get target location
             Location targetLoc = getTargetLocation(player, 15);
 
-            // Arcane energy buildup
             new BukkitRunnable() {
                 int ticks = 0;
                 @Override
@@ -463,7 +424,6 @@ public enum Spell {
                         return;
                     }
 
-                    // Magical energy rings at target location
                     double radius = ticks * 0.1;
 
                     for (int i = 0; i < 16; i++) {
@@ -488,7 +448,6 @@ public enum Spell {
         }
 
         private void arcaneExplosion(Location center, Player player, Plugin plugin) {
-            // Massive arcane explosion at target location
             new BukkitRunnable() {
                 double radius = 0;
 
@@ -499,7 +458,6 @@ public enum Spell {
                         return;
                     }
 
-                    // Expanding wave
                     for (int i = 0; i < 32; i++) {
                         double angle = (Math.PI * 2 * i) / 32;
                         Location waveLoc = center.clone().add(
@@ -512,7 +470,6 @@ public enum Spell {
                         waveLoc.getWorld().spawnParticle(Particle.ENCHANT, waveLoc, 5, 0.2, 0.2, 0.2, 0.1);
                     }
 
-                    // Damage entities in current ring
                     for (Entity entity : center.getWorld().getNearbyEntities(center, radius + 1, 3, radius + 1)) {
                         if (entity instanceof LivingEntity target && !entity.equals(player)) {
                             double distance = entity.getLocation().distance(center);
@@ -560,14 +517,11 @@ public enum Spell {
 
     public abstract void cast(Player player, Plugin plugin);
 
-    // Helper method to get target location based on where player is looking
     private static Location getTargetLocation(Player player, int maxDistance) {
-        // Try to get the block the player is looking at
         if (player.getTargetBlockExact(maxDistance) != null) {
             return Objects.requireNonNull(player.getTargetBlockExact(maxDistance)).getLocation().add(0, 1, 0);
         }
 
-        // If no block is found, use the direction they're looking
         return player.getEyeLocation().add(player.getEyeLocation().getDirection().multiply(maxDistance));
     }
 }

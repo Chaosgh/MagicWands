@@ -25,7 +25,7 @@ public class SpellRegistry {
 
     /**
      * Initialisiert das SpellRegistry mit der Plugin-Instanz.
-     * MUSS in der onEnable() Methode des Hauptplugins aufgerufen werden!
+     * MUSS in der onEnable() Methode des Hauptplugins aufgerufen werden sonst alles kapusch
      *
      * @param plugin Die Plugin-Instanz
      */
@@ -35,20 +35,16 @@ public class SpellRegistry {
     }
 
     /**
-     * Setzt den aktiven Zauberspruch für einen Spieler.
+     * Setzt den aktiven Zauberspruch für einen Spieler. #todo für per wand nicht per spieler
      *
      * @param player Der Spieler
      * @param spell Der zu aktivierende Zauberspruch
      */
     public static void setActiveSpell(Player player, Spell spell) {
-        // Methode zum Setzen des Mana-Regen-Cooldowns in Wand.java hinzufügen
-        // public void setManaRegenCooldown() {
-        //     manaRegenCooldowns.put(this.wandId, System.currentTimeMillis() + MANA_REGEN_COOLDOWN);
-        // }
+
 
         activeSpells.put(player.getUniqueId(), spell);
 
-        // Fancy spell selection message with element color
         String elementColor = getElementColor(spell);
         player.sendMessage("§7▬▬▬▬▬▬▬▬▬▬▬ §6✦ §7▬▬▬▬▬▬▬▬▬▬▬");
         player.sendMessage("§f⚡ §aZauber gewählt: " + elementColor + spell.getDisplayName());
@@ -109,20 +105,17 @@ public class SpellRegistry {
         // Mana abziehen
         wand.setCurrentMana(currentMana - manaCost);
 
-        // Mana usage display
 
 
-        // Aktualisiere die Mana-Bar sofort
+        // Aktualisiere die Manabar
         BossBar bossBar = ManaDisplayListener.getPlayerBossBar(player);
         if (bossBar != null) {
             ManaDisplayListener.updateManaBar(player, wand, bossBar);
         }
 
         try {
-            // ZAUBER AUSFÜHREN - JETZT MIT PLUGIN!
             spell.cast(player, pluginInstance);
 
-            // Success message after a short delay
             pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () -> player.sendMessage(elementColor + "✨ " + spell.getDisplayName() + " §awurde erfolgreich gewirkt!"), 10L);
 
         } catch (Exception e) {
@@ -130,17 +123,14 @@ public class SpellRegistry {
             pluginInstance.getLogger().severe("Error casting spell " + spell.name() + " for player " + player.getName() + ": " + e.getMessage());
             e.printStackTrace();
 
-            // Mana wird bei Fehlern nicht zurückgegeben, da der Versuch bereits Mana kostet.
             return;
         }
 
         // Cooldown setzen
         setCooldown(playerId, spell);
 
-        // Setze den Mana-Regenerations-Cooldown für den Zauberstab
         wand.setManaRegenCooldown();
 
-        // Cooldown notification
         player.sendMessage("§7⏰ Cooldown: §e" + spell.getCooldownSeconds() + " Sekunden");
     }
 
@@ -165,16 +155,12 @@ public class SpellRegistry {
         playerCooldowns.put(key, cooldownEnd);
     }
 
-    /**
-     * Erstellt eine ASCII Progress Bar.
-     */
+
     private static String createProgressBar(double current, double max) {
         double percentage = current / max;
         int filledLength = (int) (20 * percentage);
         int emptyLength = 20 - filledLength;
 
-        // Grüne Farbe für gefüllten Teil
-        // Graue Farbe für leeren Teil
 
         return "§a" + // Grüne Farbe für gefüllten Teil
                 "█".repeat(filledLength) +

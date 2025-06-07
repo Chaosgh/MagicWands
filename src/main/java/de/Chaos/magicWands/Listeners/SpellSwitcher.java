@@ -26,7 +26,6 @@ public class SpellSwitcher implements Listener {
     public void onPlayerSneak(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
         
-        // Nur aktivieren, wenn der Spieler anfängt zu sneaken
         if (!event.isSneaking()) return;
         
         ItemStack heldItem = player.getInventory().getItemInMainHand();
@@ -41,7 +40,6 @@ public class SpellSwitcher implements Listener {
             return;
         }
         
-        // Nächsten Zauberspruch auswählen
         UUID playerId = player.getUniqueId();
         int currentIndex = selectedSpellIndex.getOrDefault(playerId, 0);
         currentIndex = (currentIndex + 1) % spells.size();
@@ -50,7 +48,6 @@ public class SpellSwitcher implements Listener {
         Spell selectedSpell = spells.get(currentIndex);
         SpellRegistry.setActiveSpell(player, selectedSpell);
         
-        // Titel anzeigen mit ausgewähltem Zauber
         showSpellSelectionTitle(player, spells, currentIndex);
     }
     
@@ -64,7 +61,6 @@ public class SpellSwitcher implements Listener {
         Wand wand = WandUtils.getWandFromItem(heldItem);
         if (wand == null) return;
         
-        // Rechtsklick zum Zaubern
         if (event.getAction().name().contains("RIGHT_CLICK")) {
             event.setCancelled(true);
             SpellRegistry.castSpell(player, wand);

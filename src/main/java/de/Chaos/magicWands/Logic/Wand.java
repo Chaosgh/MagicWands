@@ -30,7 +30,6 @@ public class Wand {
     private static final Map<UUID, Double> wandRegenRateMap = new HashMap<>();
     private static final Map<UUID, Long> manaRegenCooldowns = new HashMap<>();
     private static final int MANA_REGEN_INTERVAL = 20; // 1 Sekunde (20 Ticks)
-    private static final double REGEN_RATE_MULTIPLIER = 1.0; // Regenerationsrate normalisiert
     private static final long MANA_REGEN_COOLDOWN = 2000; // 2 Sekunden Cooldown nach Zaubern
     private final UUID wandId;
     private final WandCore core;
@@ -51,7 +50,7 @@ public class Wand {
         this.maxMana = core.getManaCapacity();
         this.regenRate = core.getManaRegenRate();
         
-        // Initialisiere Mana-Werte
+        // Initialisiere Mana-Werte in den maps
         playerManaMap.put(this.wandId, this.maxMana);
         wandMaxManaMap.put(this.wandId, this.maxMana);
         wandRegenRateMap.put(this.wandId, this.regenRate);
@@ -68,7 +67,7 @@ public class Wand {
                 for (Map.Entry<UUID, Double> entry : playerManaMap.entrySet()) {
                     UUID wandId = entry.getKey();
                     double currentMana = entry.getValue();
-                    double regenRate = wandRegenRateMap.getOrDefault(wandId, 1.0) * REGEN_RATE_MULTIPLIER; // Beibehaltung des Multiplikators hier, falls er später für spezifische Effekte benötigt wird, aber der Standardwert ist jetzt 1.0
+                    double regenRate = wandRegenRateMap.getOrDefault(wandId, 1.0);
                     double maxMana = getMaxManaForWand(wandId);
                     
                     // Prüfe ob der Zauberstab im Mana-Regenerations-Cooldown ist
@@ -135,7 +134,6 @@ public class Wand {
     public void setCurrentMana(double mana) {
         double maxMana = getMaxManaForWand(wandId);
         playerManaMap.put(wandId, Math.min(maxMana, Math.max(0, mana)));
-        // Der Mana-Regenerations-Cooldown wird jetzt in SpellRegistry.castSpell() gesetzt.
     }
 
     public WandCore getWandCore() { return core; }
